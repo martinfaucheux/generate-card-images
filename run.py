@@ -31,12 +31,33 @@ def sanitize_filename(prompt):
     return clean_name.strip("_").lower()
 
 
+def load_base_style_image():
+    """Load and encode the base style image."""
+    base_style_path = "inputs/base_style.png"
+
+    if not os.path.exists(base_style_path):
+        raise FileNotFoundError(f"Base style image not found at {base_style_path}")
+
+    with open(base_style_path, "rb") as f:
+        image_data = f.read()
+
+    # Get the MIME type
+    mime_type, _ = mimetypes.guess_type(base_style_path)
+    if mime_type is None:
+        mime_type = "image/png"  # Default to PNG
+
+    return image_data, mime_type
+
+
 def generate(prompt):
     client = genai.Client(
         api_key=os.environ.get("GEMINI_API_KEY"),
     )
 
     model = "gemini-2.5-flash-image-preview"
+    # Load the base style image
+    base_image_data, base_image_mime_type = load_base_style_image()
+
     contents = [
         types.Content(
             role="user",
@@ -44,7 +65,10 @@ def generate(prompt):
                 types.Part.from_text(
                     text=f"""{prompt}
 
-Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions."""
+Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
+                ),
+                types.Part.from_bytes(
+                    data=base_image_data, mime_type=base_image_mime_type
                 ),
             ],
         ),
