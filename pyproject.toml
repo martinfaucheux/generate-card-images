@@ -3,7 +3,12 @@ name = "generate_cards"
 version = "0.1.0"
 description = "Default template for PDM package"
 authors = [{ name = "Martin Faucheux", email = "martin.faucheux@gmail.com" }]
-dependencies = ["google-genai>=1.38.0", "python-dotenv>=1.0.0"]
+dependencies = [
+    "google-genai>=1.38.0",
+    "python-dotenv>=1.0.0",
+    "notion-client>=2.2.1",
+    "requests>=2.31.0",
+]
 requires-python = "==3.13.*"
 readme = "README.md"
 license = { text = "MIT" }
