@@ -83,7 +83,7 @@ def find_last_generated_image() -> str:
     return image_files[0][0]  # Return the path of the most recent image
 
 
-def _generate(prompt, image_path_list: list[str] | None = None):
+def _generate(prompt, image_path_list: list[str] | None = None, output_path=None):
     image_path_list = image_path_list or []
     client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
     model = "gemini-2.5-flash-image-preview"
@@ -122,14 +122,22 @@ def _generate(prompt, image_path_list: list[str] | None = None):
             chunk.candidates[0].content.parts[0].inline_data
             and chunk.candidates[0].content.parts[0].inline_data.data
         ):
-            file_name = generate_image_filename(f"{prompt}_{file_index}")
+            file_name = (
+                output_path
+                if output_path
+                else (
+                    dir.lstrip("/")
+                    + "/"
+                    + generate_image_filename(f"{prompt}_{file_index}")
+                )
+            )
             file_index += 1
             inline_data = chunk.candidates[0].content.parts[0].inline_data
             data_buffer = inline_data.data
             file_extension = mimetypes.guess_extension(inline_data.mime_type)
 
             # Ensure outputs directory exists
-            os.makedirs("outputs", exist_ok=True)
+            os.makedirs(file_name.rsplit("/", 1)[0], exist_ok=True)
 
             save_binary_file(f"{file_name}{file_extension}", data_buffer)
         else:
@@ -149,14 +157,14 @@ def sanitize_prompt(prompt):
     return prompt
 
 
-def generate(prompt):
+def generate(prompt, output_path=None):
     refined_prompt = f"""{sanitize_prompt(prompt)}
 
 All the characters on the picture should be humanoid cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies). The characters shouldn't have weapons unless specified in the prompt.
 Use only the prompt to define the number of characters. Usually it is only 1 unless specified otherwise.
 Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
 
-    return _generate(refined_prompt, ["inputs/base_style.png"])
+    return _generate(refined_prompt, ["inputs/base_style.png"], output_path=output_path)
 
 
 def modify(prompt, image_path=None):
