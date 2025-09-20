@@ -58,6 +58,10 @@ def generate(prompt):
     # Load the base style image
     base_image_data, base_image_mime_type = load_base_style_image()
 
+    prompt = prompt.strip()
+    if prompt[-1] != ".":
+        prompt += "."
+
     contents = [
         types.Content(
             role="user",
@@ -65,6 +69,7 @@ def generate(prompt):
                 types.Part.from_text(
                     text=f"""{prompt}
 
+All the characters on the picture should be cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies).
 Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
                 ),
                 types.Part.from_bytes(
