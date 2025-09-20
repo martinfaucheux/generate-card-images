@@ -150,7 +150,8 @@ def sanitize_prompt(prompt):
 def generate(prompt):
     refined_prompt = f"""{sanitize_prompt(prompt)}
 
-All the characters on the picture should be cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies).
+All the characters on the picture should be humanoid cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies). The characters shouldn't have weapons unless specified in the prompt.
+Use only the prompt to define the number of characters. Usually it is only 1 unless specified otherwise.
 Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
 
     return _generate(refined_prompt, ["inputs/base_style.png"])
