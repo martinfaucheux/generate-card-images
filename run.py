@@ -106,10 +106,6 @@ def _generate(prompt, image_path_list: list[str] | None = None):
         response_modalities=["IMAGE", "TEXT"],
     )
 
-    # Create base filename from prompt
-    base_filename = sanitize_filename(prompt)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
     file_index = 0
     for chunk in client.models.generate_content_stream(
         model=model,
@@ -126,7 +122,7 @@ def _generate(prompt, image_path_list: list[str] | None = None):
             chunk.candidates[0].content.parts[0].inline_data
             and chunk.candidates[0].content.parts[0].inline_data.data
         ):
-            file_name = f"outputs/{base_filename}_{timestamp}_{file_index}"
+            file_name = generate_image_filename(f"{prompt}_{file_index}")
             file_index += 1
             inline_data = chunk.candidates[0].content.parts[0].inline_data
             data_buffer = inline_data.data
@@ -138,6 +134,12 @@ def _generate(prompt, image_path_list: list[str] | None = None):
             save_binary_file(f"{file_name}{file_extension}", data_buffer)
         else:
             print(chunk.text)
+
+
+def generate_image_filename(base_filename, max_char=50):
+    base_filename = sanitize_filename(base_filename)
+    epoch_timestamp = int(datetime.now().timestamp())
+    return f"outputs/{epoch_timestamp}_{base_filename}.png"
 
 
 def sanitize_prompt(prompt):
