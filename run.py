@@ -8,8 +8,12 @@ import os
 import re
 from datetime import datetime
 
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 def save_binary_file(file_name, data):
@@ -72,14 +76,14 @@ Generate the image with a 1:1 aspect ratio (square format). The image should be 
             chunk.candidates[0].content.parts[0].inline_data
             and chunk.candidates[0].content.parts[0].inline_data.data
         ):
-            file_name = f"images/{base_filename}_{timestamp}_{file_index}"
+            file_name = f"outputs/{base_filename}_{timestamp}_{file_index}"
             file_index += 1
             inline_data = chunk.candidates[0].content.parts[0].inline_data
             data_buffer = inline_data.data
             file_extension = mimetypes.guess_extension(inline_data.mime_type)
 
-            # Ensure images directory exists
-            os.makedirs("images", exist_ok=True)
+            # Ensure outputs directory exists
+            os.makedirs("outputs", exist_ok=True)
 
             save_binary_file(f"{file_name}{file_extension}", data_buffer)
         else:
