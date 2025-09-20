@@ -2,7 +2,6 @@
 # pip install google-genai
 
 import argparse
-import base64
 import mimetypes
 import os
 import re
@@ -31,25 +30,33 @@ def sanitize_filename(prompt):
     return clean_name.strip("_").lower()
 
 
-def load_base_style_image():
-    """Load and encode the base style image."""
-    base_style_path = "inputs/base_style.png"
+def load_image(image_path):
+    """Load an image file for modification."""
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image not found at {image_path}")
 
-    if not os.path.exists(base_style_path):
-        raise FileNotFoundError(f"Base style image not found at {base_style_path}")
-
-    with open(base_style_path, "rb") as f:
+    with open(image_path, "rb") as f:
         image_data = f.read()
 
     # Get the MIME type
-    mime_type, _ = mimetypes.guess_type(base_style_path)
+    mime_type, _ = mimetypes.guess_type(image_path)
     if mime_type is None:
-        mime_type = "image/png"  # Default to PNG
+        # Try to guess from common extensions
+        ext = os.path.splitext(image_path)[1].lower()
+        mime_type_map = {
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".gif": "image/gif",
+            ".bmp": "image/bmp",
+            ".webp": "image/webp",
+        }
+        mime_type = mime_type_map.get(ext, "image/png")
 
     return image_data, mime_type
 
 
-def find_last_generated_image():
+def find_last_generated_image() -> str:
     """Find the most recently generated image in the outputs directory."""
     outputs_dir = "outputs"
 
@@ -76,66 +83,27 @@ def find_last_generated_image():
     return image_files[0][0]  # Return the path of the most recent image
 
 
-def load_image_for_modification(image_path):
-    """Load an image file for modification."""
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image not found at {image_path}")
-
-    with open(image_path, "rb") as f:
-        image_data = f.read()
-
-    # Get the MIME type
-    mime_type, _ = mimetypes.guess_type(image_path)
-    if mime_type is None:
-        # Try to guess from common extensions
-        ext = os.path.splitext(image_path)[1].lower()
-        mime_type_map = {
-            ".png": "image/png",
-            ".jpg": "image/jpeg",
-            ".jpeg": "image/jpeg",
-            ".gif": "image/gif",
-            ".bmp": "image/bmp",
-            ".webp": "image/webp",
-        }
-        mime_type = mime_type_map.get(ext, "image/png")
-
-    return image_data, mime_type
-
-
-def generate(prompt):
-    client = genai.Client(
-        api_key=os.environ.get("GEMINI_API_KEY"),
-    )
-
+def _generate(prompt, image_path_list: list[str] | None = None):
+    image_path_list = image_path_list or []
+    client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
     model = "gemini-2.5-flash-image-preview"
-    # Load the base style image
-    base_image_data, base_image_mime_type = load_base_style_image()
-
-    prompt = prompt.strip()
-    if prompt[-1] != ".":
-        prompt += "."
 
     contents = [
         types.Content(
             role="user",
             parts=[
-                types.Part.from_text(
-                    text=f"""{prompt}
-
-All the characters on the picture should be cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies).
-Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
-                ),
-                types.Part.from_bytes(
-                    data=base_image_data, mime_type=base_image_mime_type
-                ),
+                types.Part.from_text(text=prompt),
+                *[
+                    types.Part.from_bytes(data=img_data, mime_type=img_mime_type)
+                    for img_data, img_mime_type in (
+                        load_image(img_path) for img_path in image_path_list
+                    )
+                ],
             ],
         ),
     ]
     generate_content_config = types.GenerateContentConfig(
-        response_modalities=[
-            "IMAGE",
-            "TEXT",
-        ],
+        response_modalities=["IMAGE", "TEXT"],
     )
 
     # Create base filename from prompt
@@ -172,80 +140,36 @@ Please use the provided base style image as a reference for the visual style, co
             print(chunk.text)
 
 
+def sanitize_prompt(prompt):
+    prompt = prompt.strip()
+    if prompt[-1] != ".":
+        prompt += "."
+    return prompt
+
+
+def generate(prompt):
+    refined_prompt = f"""{sanitize_prompt(prompt)}
+
+All the characters on the picture should be cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies).
+Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
+
+    return _generate(refined_prompt, ["inputs/base_style.png"])
+
+
 def modify(prompt, image_path=None):
     """Modify an existing image based on a prompt."""
-    client = genai.Client(
-        api_key=os.environ.get("GEMINI_API_KEY"),
-    )
-
-    model = "gemini-2.5-flash-image-preview"
 
     # Load the image to modify
     if image_path is None:
         image_path = find_last_generated_image()
         print(f"Using last generated image: {image_path}")
 
-    image_data, image_mime_type = load_image_for_modification(image_path)
-
-    prompt = prompt.strip()
-    if prompt[-1] != ".":
-        prompt += "."
-
-    contents = [
-        types.Content(
-            role="user",
-            parts=[
-                types.Part.from_text(
-                    text=f"""Please modify this image: {prompt}
+    refined_prompt = f"""Please modify this image: {sanitize_prompt(prompt)}
 
 Keep the same cartoonish style with cats having big eyes, expressive faces, and cartoon proportions (large heads, small bodies).
 Maintain the 1:1 aspect ratio (square format) and the overall artistic style of the original image."""
-                ),
-                types.Part.from_bytes(data=image_data, mime_type=image_mime_type),
-            ],
-        ),
-    ]
-    generate_content_config = types.GenerateContentConfig(
-        response_modalities=[
-            "IMAGE",
-            "TEXT",
-        ],
-    )
 
-    # Create base filename from prompt and original filename
-    original_name = os.path.splitext(os.path.basename(image_path))[0]
-    modification_desc = sanitize_filename(prompt)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base_filename = f"{original_name}_modified_{modification_desc}"
-
-    file_index = 0
-    for chunk in client.models.generate_content_stream(
-        model=model,
-        contents=contents,
-        config=generate_content_config,
-    ):
-        if (
-            chunk.candidates is None
-            or chunk.candidates[0].content is None
-            or chunk.candidates[0].content.parts is None
-        ):
-            continue
-        if (
-            chunk.candidates[0].content.parts[0].inline_data
-            and chunk.candidates[0].content.parts[0].inline_data.data
-        ):
-            file_name = f"outputs/{base_filename}_{timestamp}_{file_index}"
-            file_index += 1
-            inline_data = chunk.candidates[0].content.parts[0].inline_data
-            data_buffer = inline_data.data
-            file_extension = mimetypes.guess_extension(inline_data.mime_type)
-
-            # Ensure outputs directory exists
-            os.makedirs("outputs", exist_ok=True)
-
-            save_binary_file(f"{file_name}{file_extension}", data_buffer)
-        else:
-            print(chunk.text)
+    return _generate(refined_prompt, [image_path])
 
 
 def main():
