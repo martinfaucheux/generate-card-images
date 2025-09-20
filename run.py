@@ -1,10 +1,12 @@
 # To run this code you need to install the following dependencies:
 # pip install google-genai
 
-
+import argparse
 import base64
 import mimetypes
 import os
+import re
+from datetime import datetime
 
 from google import genai
 from google.genai import types
@@ -17,7 +19,15 @@ def save_binary_file(file_name, data):
     print(f"File saved to to: {file_name}")
 
 
-def generate():
+def sanitize_filename(prompt):
+    """Convert prompt to a safe filename."""
+    # Take first 50 characters and remove special characters
+    clean_name = re.sub(r"[^\w\s-]", "", prompt[:50])
+    clean_name = re.sub(r"[-\s]+", "_", clean_name)
+    return clean_name.strip("_").lower()
+
+
+def generate(prompt):
     client = genai.Client(
         api_key=os.environ.get("GEMINI_API_KEY"),
     )
@@ -27,7 +37,11 @@ def generate():
         types.Content(
             role="user",
             parts=[
-                types.Part.from_text(text="""INSERT_INPUT_HERE"""),
+                types.Part.from_text(
+                    text=f"""{prompt}
+
+Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions."""
+                ),
             ],
         ),
     ]
@@ -37,6 +51,10 @@ def generate():
             "TEXT",
         ],
     )
+
+    # Create base filename from prompt
+    base_filename = sanitize_filename(prompt)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     file_index = 0
     for chunk in client.models.generate_content_stream(
@@ -54,15 +72,38 @@ def generate():
             chunk.candidates[0].content.parts[0].inline_data
             and chunk.candidates[0].content.parts[0].inline_data.data
         ):
-            file_name = f"ENTER_FILE_NAME_{file_index}"
+            file_name = f"images/{base_filename}_{timestamp}_{file_index}"
             file_index += 1
             inline_data = chunk.candidates[0].content.parts[0].inline_data
             data_buffer = inline_data.data
             file_extension = mimetypes.guess_extension(inline_data.mime_type)
+
+            # Ensure images directory exists
+            os.makedirs("images", exist_ok=True)
+
             save_binary_file(f"{file_name}{file_extension}", data_buffer)
         else:
             print(chunk.text)
 
 
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate AI images with 1:1 aspect ratio"
+    )
+    parser.add_argument("prompt", help="The prompt for image generation")
+
+    args = parser.parse_args()
+
+    # Check if API key is set
+    if not os.environ.get("GEMINI_API_KEY"):
+        print("Error: GEMINI_API_KEY environment variable is not set")
+        print("Please set it with: export GEMINI_API_KEY=your_api_key")
+        return 1
+
+    print(f"Generating image for prompt: '{args.prompt}'")
+    generate(args.prompt)
+    return 0
+
+
 if __name__ == "__main__":
-    generate()
+    exit(main())
