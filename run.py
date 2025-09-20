@@ -123,7 +123,13 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate AI images with 1:1 aspect ratio"
     )
-    parser.add_argument("prompt", help="The prompt for image generation")
+
+    # Create subparsers for different commands
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Create parser for the 'new' command
+    new_parser = subparsers.add_parser("new", help="Generate a new image")
+    new_parser.add_argument("prompt", help="The prompt for image generation")
 
     args = parser.parse_args()
 
@@ -133,8 +139,14 @@ def main():
         print("Please set it with: export GEMINI_API_KEY=your_api_key")
         return 1
 
-    print(f"Generating image for prompt: '{args.prompt}'")
-    generate(args.prompt)
+    # Handle different commands
+    if args.command == "new":
+        print(f"Generating new image for prompt: '{args.prompt}'")
+        generate(args.prompt)
+    else:
+        parser.print_help()
+        return 1
+
     return 0
 
 
