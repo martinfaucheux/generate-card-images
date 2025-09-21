@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
 TEXT_FONT = "fonts/Sniglet-Regular.ttf"
+NUMBER_FONT = "fonts/EagleLake-Regular.ttf"
 
 
 class CardGenerator:
@@ -199,7 +200,7 @@ class CardGenerator:
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
-        font_large = ImageFont.truetype(TITLE_FONT, 45)
+        font_large = ImageFont.truetype(TITLE_FONT, 38)
         # Get text bounding box to calculate width for centering
         bbox = draw.textbbox((0, 0), name, font=font_large)
         text_width = bbox[2] - bbox[0]
@@ -213,6 +214,14 @@ class CardGenerator:
             fill=(0, 0, 0),
             font=font_large,
         )
+
+        # Add glyph image on top left corner
+        glyph_img = Image.open("inputs/glyph_colored.png")
+        glyph_size = 150
+        glyph_img = glyph_img.resize((glyph_size, glyph_size))
+        glyph_x = 3
+        glyph_y = 40
+        card.paste(glyph_img, (glyph_x, glyph_y), glyph_img)
 
         # Add description with justified text and max width
         font_medium = ImageFont.truetype(TEXT_FONT, 30)
