@@ -158,7 +158,7 @@ class CardGenerator:
             current_y += line_height
 
     def create_card(
-        self, character_image: str, name: str, description: str
+        self, character_image: str, name: str, description: str, force=99
     ) -> Image.Image:
         # Create base card with rounded corners
         card = self.create_rounded_card_base()
@@ -222,6 +222,30 @@ class CardGenerator:
         glyph_x = 3
         glyph_y = 40
         card.paste(glyph_img, (glyph_x, glyph_y), glyph_img)
+
+        # Add number on the glyph
+        number_str = str(force)
+        font_number = ImageFont.truetype(
+            NUMBER_FONT, 55
+        )  # Slightly smaller to ensure it fits
+
+        # Get text dimensions using textbbox for accurate positioning
+        num_bbox = draw.textbbox((0, 0), number_str, font=font_number)
+        num_width = num_bbox[2] - num_bbox[0]
+        num_height = num_bbox[3] - num_bbox[1]
+
+        # Calculate the visual center of the glyph (accounting for the decorative border)
+        # The glyph has some visual padding, so we need to center within the actual circular area
+        glyph_visual_center_x = glyph_x + glyph_size // 2
+        glyph_visual_center_y = glyph_y + glyph_size // 2 + 5  # Slight adjustment down
+
+        # Position text so its center aligns with glyph center
+        num_x = glyph_visual_center_x - num_width // 2
+        num_y = (
+            glyph_visual_center_y - num_height // 2 - num_bbox[1]
+        )  # Adjust for text baseline
+
+        draw.text((num_x, num_y), number_str, fill=(0, 0, 0), font=font_number)
 
         # Add description with justified text and max width
         font_medium = ImageFont.truetype(TEXT_FONT, 30)
