@@ -43,15 +43,15 @@ class CardGenerator:
         draw = ImageDraw.Draw(card)
 
         # Add scroll image under the name
-        scroll_img = Image.open("inputs/scroll.png")
-        # Resize scroll to fit nicely under the name (make it narrower than the card)
-        scroll_width = 700  # Slightly narrower than card width (750)
-        scroll_height = int(scroll_img.height * (scroll_width / scroll_img.width) * 1.2)
+        scroll_img = Image.open("inputs/flat_scroll.png")
+
+        scroll_width = 1000  # Slightly narrower than card width (750)
+        scroll_height = int(scroll_img.height * (scroll_width / scroll_img.width) * 0.8)
         scroll_img = scroll_img.resize((scroll_width, scroll_height))
 
         # Position scroll under the name
-        scroll_x = (self.output_size[0] - scroll_width) // 2  # Center horizontally
-        scroll_y = 20  # Position under the name text
+        scroll_x = (self.output_size[0] - scroll_width) // 2 - 90
+        scroll_y = 0  # Position under the name text
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
