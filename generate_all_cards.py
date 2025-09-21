@@ -31,6 +31,19 @@ TEXTURE_MAP = {
     "Potion": "potion_texture.png",
 }
 
+LOGO_MAP = {
+    "Chat": "paw.png",
+    "Lieu": "place.png",
+    "Rituel": "yoga.png",
+    "Esprit": "lotus.png",
+    "Festival": "party.png",
+    "Démon": "demon.png",
+    "Relique": "vase.png",
+    "Idole": "star.png",
+    "Nourriture": "burger.png",
+    "Potion": "potion.png",
+}
+
 
 def get_image_path(card_title: str) -> str:
     """Get the file path for a card image based on its title."""
@@ -73,7 +86,7 @@ if __name__ == "__main__":
         )
         card = generator.create_card(
             img_path,
-            f"inputs/textures/{TEXTURE_MAP[suit_name]}",
+            f"inputs/logos/{LOGO_MAP[suit_name]}",
             card_title,
             description,
             suit_name,

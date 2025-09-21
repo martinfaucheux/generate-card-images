@@ -145,37 +145,80 @@ class CardGenerator:
         if image.mode != "RGBA":
             image = image.convert("RGBA")
 
-        # Create a background with secondary color
-        background = Image.new("RGBA", image.size, (*self.bg_color_secondary, 255))
-        color1 = lerp(self.bg_color_primary, self.bg_color_secondary, 0.6)
-        color2 = self.bg_color_secondary
+        # Use lighter colors for the logo mapping
+        color1 = lerp(
+            self.bg_color_primary, self.bg_color_secondary, 0.8
+        )  # Much lighter blend
+        color2 = self.bg_color_secondary  # Keep secondary as lightest
 
-        # Composite the texture over the background to fill transparent areas
-        composite = Image.alpha_composite(background, image)
+        # Create a new image with transparency preserved
+        result = Image.new("RGBA", image.size, (0, 0, 0, 0))  # Fully transparent
+        pixels = image.load()
+        result_pixels = result.load()
+        width, height = image.size
 
-        # Get pixel data
-        pixels = composite.load()
-        width, height = composite.size
-
-        # Apply color interpolation
+        # Apply color interpolation only to non-transparent pixels
         for x in range(width):
             for y in range(height):
                 r, g, b, alpha = pixels[x, y]
 
-                # Convert RGB to grayscale for color mapping
-                gray_value = int(0.299 * r + 0.587 * g + 0.114 * b)
+                # Only process pixels that have some opacity
+                if alpha > 0:
+                    # Convert RGB to grayscale for color mapping
+                    gray_value = int(0.299 * r + 0.587 * g + 0.114 * b)
 
-                # Normalize gray value to 0-1 range
-                t = gray_value / 255.0
+                    # Normalize gray value to 0-1 range
+                    t = gray_value / 255.0
 
-                # Interpolate between primary (black=0) and secondary (white=255)
-                new_r = int(color1[0] * (1 - t) + color2[0] * t)
-                new_g = int(color1[1] * (1 - t) + color2[1] * t)
-                new_b = int(color1[2] * (1 - t) + color2[2] * t)
+                    # Interpolate between lighter color1 (black=0) and secondary (white=255)
+                    new_r = int(color1[0] * (1 - t) + color2[0] * t)
+                    new_g = int(color1[1] * (1 - t) + color2[1] * t)
+                    new_b = int(color1[2] * (1 - t) + color2[2] * t)
 
-                pixels[x, y] = (new_r, new_g, new_b, alpha)
+                    result_pixels[x, y] = (new_r, new_g, new_b, alpha)
+                else:
+                    # Keep transparent pixels transparent
+                    result_pixels[x, y] = (0, 0, 0, 0)
 
-        return composite
+        return result
+
+    def create_chess_pattern_texture(
+        self, texture_image: str, pattern_size: tuple[int, int], logo_size: int = 50
+    ) -> Image.Image:
+        """Create a chess pattern with small repeated logos."""
+        pattern_width, pattern_height = pattern_size
+
+        # Load and resize the logo
+        logo = Image.open(texture_image)
+        logo = logo.resize((logo_size, logo_size))
+
+        # Apply color mapping to the logo - but use lighter background
+        logo = self.apply_color_mapping(logo)
+
+        # Create the base pattern with lighter background color (secondary)
+        pattern = Image.new("RGBA", pattern_size, (*self.bg_color_secondary, 255))
+
+        # Add more spacing between logos
+        logo_spacing = logo_size + 20  # Add 20px spacing between logos
+
+        # Calculate how many logos fit in each direction with spacing
+        cols = pattern_width // logo_spacing + 2  # Add extra to ensure coverage
+        rows = pattern_height // logo_spacing + 2
+
+        # Place logos in chess pattern with increased spacing
+        for row in range(rows):
+            for col in range(cols):
+                # Chess pattern: alternate between showing logo and background
+                # Use modulo to create checkerboard pattern
+                if (row + col) % 2 == 0:
+                    x = col * logo_spacing
+                    y = row * logo_spacing
+
+                    # Only paste if the logo would be visible in our pattern area
+                    if x < pattern_width and y < pattern_height:
+                        pattern.paste(logo, (x, y), logo)
+
+        return pattern
 
     def _draw_justified_text(self, draw, text, x, y, max_width, font):
         """Draw justified text with word wrapping within max_width."""
@@ -244,25 +287,27 @@ class CardGenerator:
         # Create base card with rounded corners
         card = self.create_rounded_card_base()
 
-        # bottom texture
-        bottom_texture = Image.open(texture_image)
-        texture_width = self.output_size[0]
-        texture_height = int(
-            bottom_texture.height * (texture_width / bottom_texture.width)
-        )
-        bottom_texture = bottom_texture.resize((texture_width, texture_height))
-
-        # Apply color mapping: white -> secondary, black -> primary
-        bottom_texture = self.apply_color_mapping(bottom_texture)
-
-        texture_x = 0
-        texture_y = self.output_size[1] - texture_height
-        card.paste(bottom_texture, (texture_x, texture_y), bottom_texture)
-
-        # Add character image
+        # Add character image first (750x750 at position 0,0)
         char_img = Image.open(character_image)
         img_size = 750
         char_img = char_img.resize((img_size, img_size))
+
+        img_start_x = (self.output_size[0] - char_img.width) // 2
+        img_start_y = 0
+        card.paste(char_img, (img_start_x, img_start_y))
+
+        # Create chess pattern texture to fill from character image to bottom
+        # Character image ends at y=750, so texture should start there
+        texture_start_y = img_size  # Start right after character image (y=750)
+        texture_height = (
+            self.output_size[1] - texture_start_y
+        )  # Fill remaining space to bottom
+        bottom_texture = self.create_chess_pattern_texture(
+            texture_image, (self.output_size[0], texture_height), logo_size=100
+        )
+
+        texture_x = 0
+        card.paste(bottom_texture, (texture_x, texture_start_y), bottom_texture)
 
         img_start_x = (self.output_size[0] - char_img.width) // 2
         img_start_y = 0
@@ -424,7 +469,7 @@ if __name__ == "__main__":
     )
     card = generator.create_card(
         img_path,
-        "inputs/textures/paw_texture.png",
+        "inputs/logos/paw.png",
         "Champignon des cavernes",
         description,
         "Festival",
