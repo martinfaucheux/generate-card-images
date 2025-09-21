@@ -357,7 +357,16 @@ class CardGenerator:
         )
 
         # Add description with justified text and max width
-        font_medium = ImageFont.truetype(TEXT_FONT, 30)
+        # Compute font size: lerp between 40 (<=100 chars) and 30 (>=200 chars)
+        descr_len = len(description)
+        if descr_len <= 100:
+            descr_font_size = 40
+        elif descr_len >= 200:
+            descr_font_size = 30
+        else:
+            # Linear interpolation
+            descr_font_size = int(40 - (descr_len - 100) * (10 / 100))
+        font_medium = ImageFont.truetype(TEXT_FONT, descr_font_size)
         y_pos = 800
         max_width = 650
         text_x = (self.output_size[0] - max_width) // 2  # Center the text block
@@ -372,22 +381,24 @@ class CardGenerator:
         return card
 
     def save_card(self, card: Image.Image, output_path: str):
-        os.makedirs(os.path.dirname(output_path.rsplit("/", 1)[0]), exist_ok=True)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         card.save(output_path, "PNG")
 
 
 if __name__ == "__main__":
     img_path = "outputs/yogi.png"
     # Test with more distinct colors to see the texture effect
-    generator = CardGenerator()
-    description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
+    generator = CardGenerator(
+        bg_color_primary="#CA926E",  # Brown for dark areas
+        bg_color_secondary="#deb48c",  # Beige for light areas
+    )
+    # description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
+    description = "Something short."
     card = generator.create_card(
         img_path,
         "Warren Libre-d'en-bas",
         description,
         "Festival",
         99,
-        bg_color_primary="#CA926E",  # Brown for dark areas
-        bg_color_secondary="#deb48c",  # Beige for light areas
     )
     generator.save_card(card, "outputs/output_card.png")
