@@ -240,12 +240,12 @@ class CardGenerator:
         # Add scroll image under the name
         scroll_img = Image.open("inputs/flat_scroll_cartoon.png")
         scroll_width = 1000  # Slightly narrower than card width (750)
-        scroll_height = int(scroll_img.height * (scroll_width / scroll_img.width) * 0.8)
+        scroll_height = int(scroll_img.height * (scroll_width / scroll_img.width) * 0.6)
         scroll_img = scroll_img.resize((scroll_width, scroll_height))
 
         # Position scroll under the name
         scroll_x = (self.output_size[0] - scroll_width) // 2 - 90
-        scroll_y = 0  # Position under the name text
+        scroll_y = -20  # Position under the name text
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
@@ -270,7 +270,7 @@ class CardGenerator:
             flag_img, black_target="#000000", white_target=self.bg_color_primary
         )
 
-        flag_width = 130
+        flag_width = 110
         flag_height = int(flag_img.height * (flag_width / flag_img.width) * 0.7)
         flag_img = flag_img.resize((flag_width, flag_height))
         flag_x = 10
@@ -309,7 +309,7 @@ class CardGenerator:
         glyph_size = 150
         glyph_img = glyph_img.resize((glyph_size, glyph_size))
         glyph_x = 3
-        glyph_y = 40
+        glyph_y = 5
         card.paste(glyph_img, (glyph_x, glyph_y), glyph_img)
 
         # Add number on the glyph
