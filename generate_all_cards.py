@@ -5,17 +5,17 @@ from notion import fetch_notion_card_database
 from utils import slugify_name
 
 SUIT_COLOR_MAP = {
-    # primary (pastel), secondary (lighter)
-    "Chat": ("#E6A8A8", "#F5D4D4"),  # Red: pastel red, lighter red
-    "Lieu": ("#8B8B8B", "#C4C4C4"),  # Black: pastel grey, lighter grey
-    "Rituel": ("#8BA8E6", "#C4D4F5"),  # Dark blue: pastel blue, lighter blue
-    "Esprit": ("#A8E6A8", "#D4F5D4"),  # Green: pastel green, lighter green
-    "Festival": ("#E6A8E6", "#F5D4F5"),  # Pink: pastel pink, lighter pink
-    "Démon": ("#C8A8E6", "#E4D4F5"),  # Purple: pastel purple, lighter purple
-    "Relique": ("#B8B8B8", "#DCDCDC"),  # Grey: pastel grey, lighter grey
-    "Idole": ("#E6E6A8", "#F5F5D4"),  # Yellow: pastel yellow, lighter yellow
-    "Nourriture": ("#D4B08A", "#E8CDB0"),  # Brown: pastel brown, lighter brown
-    "Potion": ("#A8D4E6", "#D4E8F5"),  # Light blue
+    # primary (vibrant), secondary (lighter)
+    "Chat": ("#D32F2F", "#FFCDD2"),  # Red: vibrant red, light red
+    "Lieu": ("#424242", "#9E9E9E"),  # Black: dark grey, medium grey
+    "Rituel": ("#1976D2", "#BBDEFB"),  # Dark blue: vibrant blue, light blue
+    "Esprit": ("#388E3C", "#C8E6C9"),  # Green: vibrant green, light green
+    "Festival": ("#E91E63", "#F8BBD9"),  # Pink: vibrant pink, light pink
+    "Démon": ("#7B1FA2", "#E1BEE7"),  # Purple: vibrant purple, light purple
+    "Relique": ("#757575", "#E0E0E0"),  # Grey: medium grey, light grey
+    "Idole": ("#F57C00", "#FFE0B2"),  # Yellow: vibrant orange-yellow, light yellow
+    "Nourriture": ("#8D6E63", "#D7CCC8"),  # Brown: vibrant brown, light brown
+    "Potion": ("#0097A7", "#B2EBF2"),  # Light blue: vibrant cyan, light cyan
 }
 
 
