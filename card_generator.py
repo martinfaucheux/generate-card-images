@@ -55,8 +55,12 @@ class CardGenerator:
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
-        font_large = ImageFont.truetype("Arial.ttf", 36)
-        draw.text((50, 40), name, fill=(0, 0, 0), font=font_large)
+        font_large = ImageFont.truetype("Arial.ttf", 50)
+        # Get text bounding box to calculate width for centering
+        bbox = draw.textbbox((0, 0), name, font=font_large)
+        text_width = bbox[2] - bbox[0]
+        text_x = (self.output_size[0] - text_width) // 2
+        draw.text((text_x, 80), name, fill=(0, 0, 0), font=font_large)
 
         # Add stats
         font_medium = ImageFont.truetype("Arial.ttf", 24)
