@@ -1,5 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
+TITLE_FONT = "fonts/CherryBombOne-Regular.ttf"
+
 
 class CardGenerator:
     def __init__(self, full_card_size: tuple = (750, 1050)):
@@ -67,7 +69,7 @@ class CardGenerator:
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
-        font_large = ImageFont.truetype("Arial.ttf", 50)
+        font_large = ImageFont.truetype(TITLE_FONT, 50)
         # Get text bounding box to calculate width for centering
         bbox = draw.textbbox((0, 0), name, font=font_large)
         text_width = bbox[2] - bbox[0]
@@ -103,5 +105,7 @@ if __name__ == "__main__":
     img_path = "outputs/yogi.png"
     generator = CardGenerator()
     stats = {"Strength": 10, "Agility": 8, "Intelligence": 7}
-    card = generator.create_card(img_path, "Hero", stats, "A brave warrior.")
+    card = generator.create_card(
+        img_path, "Warren Libre-d'en-bas", stats, "A brave warrior."
+    )
     generator.save_card(card, "outputs/output_card.png")
