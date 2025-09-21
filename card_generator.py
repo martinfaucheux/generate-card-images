@@ -188,7 +188,7 @@ class CardGenerator:
         draw = ImageDraw.Draw(card)
 
         # Add scroll image under the name
-        scroll_img = Image.open("inputs/flat_scroll.png")
+        scroll_img = Image.open("inputs/flat_scroll_scribled.png")
         scroll_width = 1000  # Slightly narrower than card width (750)
         scroll_height = int(scroll_img.height * (scroll_width / scroll_img.width) * 0.8)
         scroll_img = scroll_img.resize((scroll_width, scroll_height))
