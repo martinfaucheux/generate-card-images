@@ -5,6 +5,11 @@ TEXT_FONT = "fonts/Sniglet-Regular.ttf"
 NUMBER_FONT = "fonts/EagleLake-Regular.ttf"
 
 
+def color_hex_to_tuple(hex_color: str) -> tuple[int, int, int]:
+    """Convert hex color string to RGB tuple."""
+    return tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
+
+
 class CardGenerator:
     def __init__(
         self,
@@ -14,13 +19,9 @@ class CardGenerator:
     ):
         # if color input is a hex string, convert to RGB tuple
         if isinstance(bg_color_primary, str) and bg_color_primary.startswith("#"):
-            bg_color_primary = tuple(
-                int(bg_color_primary[i : i + 2], 16) for i in (1, 3, 5)
-            )
+            bg_color_primary = color_hex_to_tuple(bg_color_primary)
         if isinstance(bg_color_secondary, str) and bg_color_secondary.startswith("#"):
-            bg_color_secondary = tuple(
-                int(bg_color_secondary[i : i + 2], 16) for i in (1, 3, 5)
-            )
+            bg_color_secondary = color_hex_to_tuple(bg_color_secondary)
 
         self.output_size = full_card_size
         self.bg_color_primary = bg_color_primary
@@ -224,10 +225,10 @@ class CardGenerator:
         card.paste(glyph_img, (glyph_x, glyph_y), glyph_img)
 
         # Add number on the glyph
+        number_color = "#ffffff"
+        number_outline_color = "#000000"
         number_str = str(force)
-        font_number = ImageFont.truetype(
-            NUMBER_FONT, 55
-        )  # Slightly smaller to ensure it fits
+        font_number = ImageFont.truetype(NUMBER_FONT, 55)
 
         # Get text dimensions using textbbox for accurate positioning
         num_bbox = draw.textbbox((0, 0), number_str, font=font_number)
@@ -245,7 +246,27 @@ class CardGenerator:
             glyph_visual_center_y - num_height // 2 - num_bbox[1]
         )  # Adjust for text baseline
 
-        draw.text((num_x, num_y), number_str, fill=(0, 0, 0), font=font_number)
+        # Draw outline by drawing the text multiple times with slight offsets
+        outline_width = 2
+
+        # Draw outline in 8 directions
+        for dx in [-outline_width, 0, outline_width]:
+            for dy in [-outline_width, 0, outline_width]:
+                if dx != 0 or dy != 0:  # Skip center position
+                    draw.text(
+                        (num_x + dx, num_y + dy),
+                        number_str,
+                        fill=color_hex_to_tuple(number_outline_color),
+                        font=font_number,
+                    )
+
+        # Draw the main text on top
+        draw.text(
+            (num_x, num_y),
+            number_str,
+            fill=color_hex_to_tuple(number_color),
+            font=font_number,
+        )
 
         # Add description with justified text and max width
         font_medium = ImageFont.truetype(TEXT_FONT, 30)
