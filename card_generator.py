@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-TITLE_FONT = "fonts/CherryBombOne-Regular.ttf"
+TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
 
 
 class CardGenerator:
@@ -69,7 +69,7 @@ class CardGenerator:
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
-        font_large = ImageFont.truetype(TITLE_FONT, 50)
+        font_large = ImageFont.truetype(TITLE_FONT, 45)
         # Get text bounding box to calculate width for centering
         bbox = draw.textbbox((0, 0), name, font=font_large)
         text_width = bbox[2] - bbox[0]
