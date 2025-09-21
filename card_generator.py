@@ -38,6 +38,15 @@ def determine_font_size(
         )
 
 
+def lerp(
+    color1: tuple[int, int, int], color2: tuple[int, int, int], t: float
+) -> tuple[int, int, int]:
+    """Linearly interpolate between two colors."""
+    return tuple(
+        int(c1 + (c2 - c1) * t) for c1, c2 in zip(color1, color2)
+    )  # Ensure values are integers
+
+
 def recolor(image: Image, black_target: str, white_target: str) -> Image:
     """
     Assuming the image is in grayscale mode ('L'), recolor it so that black maps to black_target
@@ -138,6 +147,8 @@ class CardGenerator:
 
         # Create a background with secondary color
         background = Image.new("RGBA", image.size, (*self.bg_color_secondary, 255))
+        color1 = lerp(self.bg_color_primary, self.bg_color_secondary, 0.6)
+        color2 = self.bg_color_secondary
 
         # Composite the texture over the background to fill transparent areas
         composite = Image.alpha_composite(background, image)
@@ -158,15 +169,9 @@ class CardGenerator:
                 t = gray_value / 255.0
 
                 # Interpolate between primary (black=0) and secondary (white=255)
-                new_r = int(
-                    self.bg_color_primary[0] * (1 - t) + self.bg_color_secondary[0] * t
-                )
-                new_g = int(
-                    self.bg_color_primary[1] * (1 - t) + self.bg_color_secondary[1] * t
-                )
-                new_b = int(
-                    self.bg_color_primary[2] * (1 - t) + self.bg_color_secondary[2] * t
-                )
+                new_r = int(color1[0] * (1 - t) + color2[0] * t)
+                new_g = int(color1[1] * (1 - t) + color2[1] * t)
+                new_b = int(color1[2] * (1 - t) + color2[2] * t)
 
                 pixels[x, y] = (new_r, new_g, new_b, alpha)
 
@@ -410,11 +415,13 @@ if __name__ == "__main__":
     img_path = "outputs/yogi.png"
     # Test with more distinct colors to see the texture effect
     generator = CardGenerator(
-        bg_color_primary="#CA926E",  # Brown for dark areas
-        bg_color_secondary="#deb48c",  # Beige for light areas
+        bg_color_primary="#D32F2F",
+        bg_color_secondary="#FFCDD2",
     )
     # description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
-    description = "Champignon des cavernes."
+    description = (
+        "Some very long description that will need to be wrapped and justified. " * 3
+    )
     card = generator.create_card(
         img_path,
         "inputs/textures/paw_texture.png",
