@@ -216,6 +216,15 @@ class CardGenerator:
             font=font_large,
         )
 
+        # Add vertical flag on the left side
+        flag_img = Image.open("inputs/vertical_flag.png")
+        flag_width = 130
+        flag_height = int(flag_img.height * (flag_width / flag_img.width) * 0.9)
+        flag_img = flag_img.resize((flag_width, flag_height))
+        flag_x = 10
+        flag_y = 70
+        card.paste(flag_img, (flag_x, flag_y), flag_img)
+
         # Add glyph image on top left corner
         glyph_img = Image.open("inputs/glyph_colored.png")
         glyph_size = 150
