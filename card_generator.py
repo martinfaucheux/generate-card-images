@@ -159,7 +159,12 @@ class CardGenerator:
             current_y += line_height
 
     def create_card(
-        self, character_image: str, name: str, description: str, force=99
+        self,
+        character_image: str,
+        name: str,
+        description: str,
+        card_suit: str,
+        force: int,
     ) -> Image.Image:
         # Create base card with rounded corners
         card = self.create_rounded_card_base()
@@ -219,11 +224,38 @@ class CardGenerator:
         # Add vertical flag on the left side
         flag_img = Image.open("inputs/vertical_flag.png")
         flag_width = 130
-        flag_height = int(flag_img.height * (flag_width / flag_img.width) * 0.9)
+        flag_height = int(flag_img.height * (flag_width / flag_img.width) * 0.7)
         flag_img = flag_img.resize((flag_width, flag_height))
         flag_x = 10
         flag_y = 70
         card.paste(flag_img, (flag_x, flag_y), flag_img)
+
+        # Add suit text vertically on the flag
+        suit_font = ImageFont.truetype(TITLE_FONT, 40)
+
+        # Create a temporary image for the rotated text
+        suit_bbox = draw.textbbox((0, 0), card_suit, font=suit_font)
+        suit_text_width = suit_bbox[2] - suit_bbox[0]
+        suit_text_height = suit_bbox[3] - suit_bbox[1]
+
+        # Create image for text (with some padding)
+        temp_img = Image.new(
+            "RGBA", (suit_text_width + 20, suit_text_height + 20), (0, 0, 0, 0)
+        )
+        temp_draw = ImageDraw.Draw(temp_img)
+
+        # Draw the text on the temporary image
+        temp_draw.text((10, 10), card_suit, fill=(0, 0, 0), font=suit_font)
+
+        # Rotate the text 90 degrees counterclockwise
+        rotated_text = temp_img.rotate(90, expand=True)
+
+        # Position the rotated text on the flag
+        suit_x = flag_x + (flag_width - rotated_text.width) // 2
+        suit_y = flag_y + (flag_height - rotated_text.height) // 2
+
+        # Paste the rotated text onto the card
+        card.paste(rotated_text, (suit_x, suit_y), rotated_text)
 
         # Add glyph image on top left corner
         glyph_img = Image.open("inputs/glyph_colored.png")
@@ -304,5 +336,11 @@ if __name__ == "__main__":
         bg_color_secondary="#deb48c",  # Beige for light areas
     )
     description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
-    card = generator.create_card(img_path, "Warren Libre-d'en-bas", description)
+    card = generator.create_card(
+        img_path,
+        "Warren Libre-d'en-bas",
+        description,
+        "Festival",
+        99,
+    )
     generator.save_card(card, "outputs/output_card.png")

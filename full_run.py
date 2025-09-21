@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
         slug_name = slugify_name(name)
 
-        filepath = f"outputs/full_run1/{slug_name}/{slug_name}_v1"
+        filepath = f"outputs/full_run/{slug_name}/{slug_name}_v1"
 
         if os.path.exists(f"{filepath}.png"):
             print(f"Skipping '{name}' as file already exists.")
