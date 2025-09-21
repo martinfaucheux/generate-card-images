@@ -10,6 +10,52 @@ def color_hex_to_tuple(hex_color: str) -> tuple[int, int, int]:
     return tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
 
 
+SUIT_COLOR_MAP = {
+    "Festival": "#DF6F6B",  # Example color for Festival
+}
+
+
+def recolor(image: Image, black_target: str, white_target: str) -> Image:
+    """
+    Assuming the image is in grayscale mode ('L'), recolor it so that black maps to black_target
+    Keep the alpha channel if present
+    """
+    if isinstance(black_target, str) and black_target.startswith("#"):
+        black_target = color_hex_to_tuple(black_target)
+    if isinstance(white_target, str) and white_target.startswith("#"):
+        white_target = color_hex_to_tuple(white_target)
+
+    # Convert to RGBA mode to handle color pixels properly
+    if image.mode != "RGBA":
+        # First convert to LA if not already, then to RGBA
+        if image.mode != "LA":
+            image = image.convert("LA")
+        image = image.convert("RGBA")
+
+    # Get pixel data
+    pixels = image.load()
+    width, height = image.size
+
+    # Apply color mapping with interpolation
+    for x in range(width):
+        for y in range(height):
+            r, g, b, alpha = pixels[x, y]
+            gray_value = (r + g + b) // 3  # Convert RGB to grayscale
+
+            # Interpolate between black_target and white_target based on gray_value
+            # gray_value ranges from 0 (black) to 255 (white)
+            t = gray_value / 255.0  # Normalize to 0-1 range
+
+            # Linear interpolation: result = black_target * (1-t) + white_target * t
+            new_r = int(black_target[0] * (1 - t) + white_target[0] * t)
+            new_g = int(black_target[1] * (1 - t) + white_target[1] * t)
+            new_b = int(black_target[2] * (1 - t) + white_target[2] * t)
+
+            pixels[x, y] = (new_r, new_g, new_b, alpha)
+
+    return image
+
+
 class CardGenerator:
     def __init__(
         self,
@@ -223,6 +269,10 @@ class CardGenerator:
 
         # Add vertical flag on the left side
         flag_img = Image.open("inputs/vertical_flag.png")
+        flag_img = recolor(
+            flag_img, black_target="#000000", white_target=SUIT_COLOR_MAP[card_suit]
+        )
+
         flag_width = 130
         flag_height = int(flag_img.height * (flag_width / flag_img.width) * 0.7)
         flag_img = flag_img.resize((flag_width, flag_height))
