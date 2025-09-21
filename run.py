@@ -125,11 +125,7 @@ def _generate(prompt, image_path_list: list[str] | None = None, output_path=None
             file_name = (
                 output_path
                 if output_path
-                else (
-                    dir.lstrip("/")
-                    + "/"
-                    + generate_image_filename(f"{prompt}_{file_index}")
-                )
+                else generate_image_filename(f"{prompt}_{file_index}")
             )
             file_index += 1
             inline_data = chunk.candidates[0].content.parts[0].inline_data
@@ -158,11 +154,13 @@ def sanitize_prompt(prompt):
 
 
 def generate(prompt, output_path=None):
-    refined_prompt = f"""{sanitize_prompt(prompt)}
-
+    refined_prompt = f"""Generate an image based on the following prompt.
 All the characters on the picture should be humanoid cats with cartoonish style, big eyes, and expressive faces, and cartoon proportions (large heads, small bodies). The characters shouldn't have weapons unless specified in the prompt.
 Use only the prompt to define the number of characters. Usually it is only 1 unless specified otherwise.
-Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image."""
+Please use the provided base style image as a reference for the visual style, color palette, and artistic approach. Generate the image with a 1:1 aspect ratio (square format). The image should be perfectly square with equal width and height dimensions, following the style of the reference image.
+prompt:
+
+{sanitize_prompt(prompt)}"""
 
     return _generate(refined_prompt, ["inputs/base_style.png"], output_path=output_path)
 
@@ -175,10 +173,12 @@ def modify(prompt, image_path=None):
         image_path = find_last_generated_image()
         print(f"Using last generated image: {image_path}")
 
-    refined_prompt = f"""Please modify this image: {sanitize_prompt(prompt)}
-
+    refined_prompt = f"""Please modify this image
 Keep the same cartoonish style with cats having big eyes, expressive faces, and cartoon proportions (large heads, small bodies).
-Maintain the 1:1 aspect ratio (square format) and the overall artistic style of the original image."""
+Maintain the 1:1 aspect ratio (square format) and the overall artistic style of the original image.
+modifications:
+
+{sanitize_prompt(prompt)}"""
 
     return _generate(refined_prompt, [image_path])
 
