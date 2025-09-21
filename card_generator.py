@@ -12,6 +12,32 @@ def color_hex_to_tuple(hex_color: str) -> tuple[int, int, int]:
     return tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
 
 
+def determine_font_size(
+    text: str,
+    min_char_size: int,
+    max_char_size: int,
+    min_font_size: int,
+    max_font_size: int,
+) -> int:
+    """
+    If text has length min_char_size or less, return max_font_size.
+    If text has length max_char_size or more, return min_font_size.
+    """
+    text_length = len(text)
+    if text_length < min_char_size:
+        return max_font_size
+    elif text_length > max_char_size:
+        return min_font_size
+    else:
+        # Linear interpolation
+        return int(
+            max_font_size
+            - (text_length - min_char_size)
+            * (max_font_size - min_font_size)
+            / (max_char_size - min_char_size)
+        )
+
+
 def recolor(image: Image, black_target: str, white_target: str) -> Image:
     """
     Assuming the image is in grayscale mode ('L'), recolor it so that black maps to black_target
@@ -249,7 +275,8 @@ class CardGenerator:
         card.paste(scroll_img, (scroll_x, scroll_y), scroll_img)
 
         # Add name
-        font_large = ImageFont.truetype(TITLE_FONT, 38)
+        title_font_size = determine_font_size(name, 10, 30, 28, 45)
+        font_large = ImageFont.truetype(TITLE_FONT, title_font_size)
         # Get text bounding box to calculate width for centering
         bbox = draw.textbbox((0, 0), name, font=font_large)
         text_width = bbox[2] - bbox[0]
@@ -358,14 +385,7 @@ class CardGenerator:
 
         # Add description with justified text and max width
         # Compute font size: lerp between 40 (<=100 chars) and 30 (>=200 chars)
-        descr_len = len(description)
-        if descr_len <= 100:
-            descr_font_size = 40
-        elif descr_len >= 200:
-            descr_font_size = 30
-        else:
-            # Linear interpolation
-            descr_font_size = int(40 - (descr_len - 100) * (10 / 100))
+        descr_font_size = determine_font_size(description, 100, 200, 30, 40)
         font_medium = ImageFont.truetype(TEXT_FONT, descr_font_size)
         y_pos = 800
         max_width = 650
@@ -393,10 +413,10 @@ if __name__ == "__main__":
         bg_color_secondary="#deb48c",  # Beige for light areas
     )
     # description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
-    description = "Something short."
+    description = "Champignon des cavernes."
     card = generator.create_card(
         img_path,
-        "Warren Libre-d'en-bas",
+        "Champignon des cavernes",
         description,
         "Festival",
         99,
