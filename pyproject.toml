@@ -17,3 +17,8 @@ license = { text = "MIT" }
 
 [tool.pdm]
 distribution = false
+
+
+[tool.pdm.scripts]
+generate = "python run.py new"
+modify = "python run.py modify"
