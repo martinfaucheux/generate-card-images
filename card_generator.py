@@ -1,3 +1,5 @@
+import os
+
 from PIL import Image, ImageDraw, ImageFont
 
 TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
@@ -8,11 +10,6 @@ NUMBER_FONT = "fonts/EagleLake-Regular.ttf"
 def color_hex_to_tuple(hex_color: str) -> tuple[int, int, int]:
     """Convert hex color string to RGB tuple."""
     return tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
-
-
-SUIT_COLOR_MAP = {
-    "Festival": "#DF6F6B",  # Example color for Festival
-}
 
 
 def recolor(image: Image, black_target: str, white_target: str) -> Image:
@@ -270,7 +267,7 @@ class CardGenerator:
         # Add vertical flag on the left side
         flag_img = Image.open("inputs/vertical_flag.png")
         flag_img = recolor(
-            flag_img, black_target="#000000", white_target=SUIT_COLOR_MAP[card_suit]
+            flag_img, black_target="#000000", white_target=self.bg_color_primary
         )
 
         flag_width = 130
@@ -375,16 +372,14 @@ class CardGenerator:
         return card
 
     def save_card(self, card: Image.Image, output_path: str):
+        os.makedirs(os.path.dirname(output_path.rsplit("/", 1)[0]), exist_ok=True)
         card.save(output_path, "PNG")
 
 
 if __name__ == "__main__":
     img_path = "outputs/yogi.png"
     # Test with more distinct colors to see the texture effect
-    generator = CardGenerator(
-        bg_color_primary="#CA926E",  # Brown for dark areas
-        bg_color_secondary="#deb48c",  # Beige for light areas
-    )
+    generator = CardGenerator()
     description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
     card = generator.create_card(
         img_path,
@@ -392,5 +387,7 @@ if __name__ == "__main__":
         description,
         "Festival",
         99,
+        bg_color_primary="#CA926E",  # Brown for dark areas
+        bg_color_secondary="#deb48c",  # Beige for light areas
     )
     generator.save_card(card, "outputs/output_card.png")
