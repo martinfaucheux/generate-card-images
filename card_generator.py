@@ -230,6 +230,7 @@ class CardGenerator:
     def create_card(
         self,
         character_image: str,
+        texture_image: str,
         name: str,
         description: str,
         card_suit: str,
@@ -239,7 +240,7 @@ class CardGenerator:
         card = self.create_rounded_card_base()
 
         # bottom texture
-        bottom_texture = Image.open("inputs/paw_texture.png")
+        bottom_texture = Image.open(texture_image)
         texture_width = self.output_size[0]
         texture_height = int(
             bottom_texture.height * (texture_width / bottom_texture.width)
@@ -416,6 +417,7 @@ if __name__ == "__main__":
     description = "Champignon des cavernes."
     card = generator.create_card(
         img_path,
+        "inputs/textures/paw_texture.png",
         "Champignon des cavernes",
         description,
         "Festival",

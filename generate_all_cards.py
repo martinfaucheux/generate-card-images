@@ -18,6 +18,19 @@ SUIT_COLOR_MAP = {
     "Potion": ("#0097A7", "#B2EBF2"),  # Light blue: vibrant cyan, light cyan
 }
 
+TEXTURE_MAP = {
+    "Chat": "paw_texture.png",
+    "Lieu": "place_texture.png",
+    "Rituel": "yoga_texture.png",
+    "Esprit": "lotus_texture.png",
+    "Festival": "party_texture.png",
+    "Démon": "deamon_texture.png",
+    "Relique": "vase_texture.png",
+    "Idole": "star_texture.png",
+    "Nourriture": "burger_texture.png",
+    "Potion": "potion_texture.png",
+}
+
 
 def get_image_path(card_title: str) -> str:
     """Get the file path for a card image based on its title."""
@@ -60,6 +73,7 @@ if __name__ == "__main__":
         )
         card = generator.create_card(
             img_path,
+            f"inputs/textures/{TEXTURE_MAP[suit_name]}",
             card_title,
             description,
             suit_name,
