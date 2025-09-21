@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
 TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
+TEXT_FONT = "fonts/Sniglet-Regular.ttf"
 
 
 class CardGenerator:
@@ -100,8 +101,63 @@ class CardGenerator:
 
         return composite
 
+    def _draw_justified_text(self, draw, text, x, y, max_width, font):
+        """Draw justified text with word wrapping within max_width."""
+        words = text.split()
+        lines = []
+        current_line = []
+
+        # Build lines that fit within max_width
+        for word in words:
+            test_line = current_line + [word]
+            test_text = " ".join(test_line)
+            bbox = draw.textbbox((0, 0), test_text, font=font)
+            text_width = bbox[2] - bbox[0]
+
+            if text_width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = [word]
+
+        if current_line:
+            lines.append(current_line)
+
+        # Draw each line with justification (except the last line)
+        line_height = font.size + 5  # Add some line spacing
+        current_y = y
+
+        for i, line_words in enumerate(lines):
+            is_last_line = i == len(lines) - 1
+            line_text = " ".join(line_words)
+
+            if is_last_line or len(line_words) == 1:
+                # Last line or single word: left-aligned
+                draw.text((x, current_y), line_text, fill=(0, 0, 0), font=font)
+            else:
+                # Justify the line by distributing extra space between words
+                bbox = draw.textbbox((0, 0), line_text, font=font)
+                line_width = bbox[2] - bbox[0]
+                extra_space = max_width - line_width
+                space_per_gap = (
+                    extra_space // (len(line_words) - 1) if len(line_words) > 1 else 0
+                )
+
+                current_x = x
+                for j, word in enumerate(line_words):
+                    draw.text((current_x, current_y), word, fill=(0, 0, 0), font=font)
+                    if j < len(line_words) - 1:  # Not the last word
+                        word_bbox = draw.textbbox((0, 0), word, font=font)
+                        word_width = word_bbox[2] - word_bbox[0]
+                        space_bbox = draw.textbbox((0, 0), " ", font=font)
+                        space_width = space_bbox[2] - space_bbox[0]
+                        current_x += word_width + space_width + space_per_gap
+
+            current_y += line_height
+
     def create_card(
-        self, character_image: str, name: str, stats: dict, description: str
+        self, character_image: str, name: str, description: str
     ) -> Image.Image:
         # Create base card with rounded corners
         card = self.create_rounded_card_base()
@@ -158,12 +214,14 @@ class CardGenerator:
             font=font_large,
         )
 
-        # Add stats
-        font_medium = ImageFont.truetype("Arial.ttf", 24)
-        y_pos = 900
-        for stat, value in stats.items():
-            draw.text((50, y_pos), f"{stat}: {value}", fill=(0, 0, 0), font=font_medium)
-            y_pos += 40
+        # Add description with justified text and max width
+        font_medium = ImageFont.truetype(TEXT_FONT, 30)
+        y_pos = 800
+        max_width = 650
+        text_x = (self.output_size[0] - max_width) // 2  # Center the text block
+        self._draw_justified_text(
+            draw, description, text_x, y_pos, max_width, font_medium
+        )
 
         # Apply rounded corner mask to the entire final card
         final_mask = self.create_rounded_mask(self.output_size, corner_radius=30)
@@ -179,11 +237,9 @@ if __name__ == "__main__":
     img_path = "outputs/yogi.png"
     # Test with more distinct colors to see the texture effect
     generator = CardGenerator(
-        bg_color_primary="#BE7B52",  # Brown for dark areas
+        bg_color_primary="#CA926E",  # Brown for dark areas
         bg_color_secondary="#deb48c",  # Beige for light areas
     )
-    stats = {"Strength": 10, "Agility": 8, "Intelligence": 7}
-    card = generator.create_card(
-        img_path, "Warren Libre-d'en-bas", stats, "A brave warrior."
-    )
+    description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
+    card = generator.create_card(img_path, "Warren Libre-d'en-bas", description)
     generator.save_card(card, "outputs/output_card.png")
