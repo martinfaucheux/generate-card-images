@@ -57,7 +57,6 @@ class CardGenerator:
 
         # Add scroll image under the name
         scroll_img = Image.open("inputs/flat_scroll.png")
-
         scroll_width = 1000  # Slightly narrower than card width (750)
         scroll_height = int(scroll_img.height * (scroll_width / scroll_img.width) * 0.8)
         scroll_img = scroll_img.resize((scroll_width, scroll_height))
@@ -72,8 +71,16 @@ class CardGenerator:
         # Get text bounding box to calculate width for centering
         bbox = draw.textbbox((0, 0), name, font=font_large)
         text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
         text_x = (self.output_size[0] - text_width) // 2
-        draw.text((text_x, 80), name, fill=(0, 0, 0), font=font_large)
+        # Center the text vertically in the scroll
+        text_y = scroll_y + (scroll_height - text_height) // 2 - 10
+        draw.text(
+            (text_x, text_y),
+            name,
+            fill=(0, 0, 0),
+            font=font_large,
+        )
 
         # Add stats
         font_medium = ImageFont.truetype("Arial.ttf", 24)
