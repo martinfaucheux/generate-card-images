@@ -4,8 +4,15 @@ TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
 
 
 class CardGenerator:
-    def __init__(self, full_card_size: tuple = (750, 1050)):
+    def __init__(
+        self,
+        full_card_size: tuple = (750, 1050),
+        bg_color_primary=(255, 255, 255),
+        bg_color_secondary=(240, 240, 240),
+    ):
         self.output_size = full_card_size
+        self.bg_color_primary = bg_color_primary
+        self.bg_color_secondary = bg_color_secondary
 
     def create_rounded_card_base(self, corner_radius: int = 30) -> Image.Image:
         """Generate a white card base with rounded corners."""
@@ -41,11 +48,71 @@ class CardGenerator:
 
         return mask
 
+    def apply_color_mapping(self, image: Image.Image) -> Image.Image:
+        """Apply color mapping to texture: transparent -> secondary, opaque -> based on grayscale"""
+        # Ensure we have RGBA mode to work with transparency
+        if image.mode != "RGBA":
+            image = image.convert("RGBA")
+
+        # Get pixel data
+        pixels = image.load()
+        width, height = image.size
+
+        # Apply color interpolation
+        for x in range(width):
+            for y in range(height):
+                r, g, b, alpha = pixels[x, y]
+
+                if alpha == 0:
+                    # Transparent areas = "white" -> use secondary color
+                    new_r, new_g, new_b = self.bg_color_secondary
+                    new_alpha = 255  # Make it opaque
+                else:
+                    # Convert RGB to grayscale for color mapping
+                    gray_value = int(0.299 * r + 0.587 * g + 0.114 * b)
+
+                    # Normalize gray value to 0-1 range
+                    t = gray_value / 255.0
+
+                    # Interpolate between primary (black=0) and secondary (white=255)
+                    new_r = int(
+                        self.bg_color_primary[0] * (1 - t)
+                        + self.bg_color_secondary[0] * t
+                    )
+                    new_g = int(
+                        self.bg_color_primary[1] * (1 - t)
+                        + self.bg_color_secondary[1] * t
+                    )
+                    new_b = int(
+                        self.bg_color_primary[2] * (1 - t)
+                        + self.bg_color_secondary[2] * t
+                    )
+                    new_alpha = 255  # Make it opaque
+
+                pixels[x, y] = (new_r, new_g, new_b, new_alpha)
+
+        return image
+
     def create_card(
         self, character_image: str, name: str, stats: dict, description: str
     ) -> Image.Image:
         # Create base card with rounded corners
         card = self.create_rounded_card_base()
+
+        # bottom texture
+        bottom_texture = Image.open("inputs/paw_texture.png")
+        texture_width = self.output_size[0]
+        texture_height = int(
+            bottom_texture.height * (texture_width / bottom_texture.width)
+        )
+        bottom_texture = bottom_texture.resize((texture_width, texture_height))
+
+        # Apply color mapping: white -> secondary, black -> primary
+        bottom_texture = self.apply_color_mapping(bottom_texture)
+
+        texture_x = 0
+        texture_y = self.output_size[1] - texture_height
+        card.paste(bottom_texture, (texture_x, texture_y), bottom_texture)
 
         # Add character image
         char_img = Image.open(character_image)
@@ -103,7 +170,11 @@ class CardGenerator:
 
 if __name__ == "__main__":
     img_path = "outputs/yogi.png"
-    generator = CardGenerator()
+    # Test with more distinct colors to see the texture effect
+    generator = CardGenerator(
+        bg_color_primary=(100, 50, 20),  # Brown for dark areas
+        bg_color_secondary=(220, 180, 140),  # Beige for light areas
+    )
     stats = {"Strength": 10, "Agility": 8, "Intelligence": 7}
     card = generator.create_card(
         img_path, "Warren Libre-d'en-bas", stats, "A brave warrior."
