@@ -6,10 +6,20 @@ TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
 class CardGenerator:
     def __init__(
         self,
-        full_card_size: tuple = (750, 1050),
+        full_card_size: tuple[int, int] = (750, 1050),
         bg_color_primary=(255, 255, 255),
         bg_color_secondary=(240, 240, 240),
     ):
+        # if color input is a hex string, convert to RGB tuple
+        if isinstance(bg_color_primary, str) and bg_color_primary.startswith("#"):
+            bg_color_primary = tuple(
+                int(bg_color_primary[i : i + 2], 16) for i in (1, 3, 5)
+            )
+        if isinstance(bg_color_secondary, str) and bg_color_secondary.startswith("#"):
+            bg_color_secondary = tuple(
+                int(bg_color_secondary[i : i + 2], 16) for i in (1, 3, 5)
+            )
+
         self.output_size = full_card_size
         self.bg_color_primary = bg_color_primary
         self.bg_color_secondary = bg_color_secondary
@@ -49,49 +59,46 @@ class CardGenerator:
         return mask
 
     def apply_color_mapping(self, image: Image.Image) -> Image.Image:
-        """Apply color mapping to texture: transparent -> secondary, opaque -> based on grayscale"""
+        """Apply color mapping to grayscale image: white -> secondary, black -> primary"""
         # Ensure we have RGBA mode to work with transparency
         if image.mode != "RGBA":
             image = image.convert("RGBA")
 
+        # Create a background with secondary color
+        background = Image.new("RGBA", image.size, (*self.bg_color_secondary, 255))
+
+        # Composite the texture over the background to fill transparent areas
+        composite = Image.alpha_composite(background, image)
+
         # Get pixel data
-        pixels = image.load()
-        width, height = image.size
+        pixels = composite.load()
+        width, height = composite.size
 
         # Apply color interpolation
         for x in range(width):
             for y in range(height):
                 r, g, b, alpha = pixels[x, y]
 
-                if alpha == 0:
-                    # Transparent areas = "white" -> use secondary color
-                    new_r, new_g, new_b = self.bg_color_secondary
-                    new_alpha = 255  # Make it opaque
-                else:
-                    # Convert RGB to grayscale for color mapping
-                    gray_value = int(0.299 * r + 0.587 * g + 0.114 * b)
+                # Convert RGB to grayscale for color mapping
+                gray_value = int(0.299 * r + 0.587 * g + 0.114 * b)
 
-                    # Normalize gray value to 0-1 range
-                    t = gray_value / 255.0
+                # Normalize gray value to 0-1 range
+                t = gray_value / 255.0
 
-                    # Interpolate between primary (black=0) and secondary (white=255)
-                    new_r = int(
-                        self.bg_color_primary[0] * (1 - t)
-                        + self.bg_color_secondary[0] * t
-                    )
-                    new_g = int(
-                        self.bg_color_primary[1] * (1 - t)
-                        + self.bg_color_secondary[1] * t
-                    )
-                    new_b = int(
-                        self.bg_color_primary[2] * (1 - t)
-                        + self.bg_color_secondary[2] * t
-                    )
-                    new_alpha = 255  # Make it opaque
+                # Interpolate between primary (black=0) and secondary (white=255)
+                new_r = int(
+                    self.bg_color_primary[0] * (1 - t) + self.bg_color_secondary[0] * t
+                )
+                new_g = int(
+                    self.bg_color_primary[1] * (1 - t) + self.bg_color_secondary[1] * t
+                )
+                new_b = int(
+                    self.bg_color_primary[2] * (1 - t) + self.bg_color_secondary[2] * t
+                )
 
-                pixels[x, y] = (new_r, new_g, new_b, new_alpha)
+                pixels[x, y] = (new_r, new_g, new_b, alpha)
 
-        return image
+        return composite
 
     def create_card(
         self, character_image: str, name: str, stats: dict, description: str
@@ -172,8 +179,8 @@ if __name__ == "__main__":
     img_path = "outputs/yogi.png"
     # Test with more distinct colors to see the texture effect
     generator = CardGenerator(
-        bg_color_primary=(100, 50, 20),  # Brown for dark areas
-        bg_color_secondary=(220, 180, 140),  # Beige for light areas
+        bg_color_primary="#BE7B52",  # Brown for dark areas
+        bg_color_secondary="#deb48c",  # Beige for light areas
     )
     stats = {"Strength": 10, "Agility": 8, "Intelligence": 7}
     card = generator.create_card(
