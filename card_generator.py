@@ -24,6 +24,21 @@ class CardGenerator:
 
         return card
 
+    def create_rounded_mask(self, size: tuple, corner_radius: int = 30) -> Image.Image:
+        """Create a mask with rounded corners for clipping images."""
+        width, height = size
+
+        # Create a black image (0 = transparent in mask)
+        mask = Image.new("L", (width, height), 0)
+        draw = ImageDraw.Draw(mask)
+
+        # Draw white rounded rectangle (255 = opaque in mask)
+        draw.rounded_rectangle(
+            [(0, 0), (width - 1, height - 1)], radius=corner_radius, fill=255
+        )
+
+        return mask
+
     def create_card(
         self, character_image: str, name: str, stats: dict, description: str
     ) -> Image.Image:
@@ -36,10 +51,8 @@ class CardGenerator:
         char_img = char_img.resize((img_size, img_size))
 
         img_start_x = (self.output_size[0] - char_img.width) // 2
-        img_start_y = 100
-        card.paste(char_img, (img_start_x, img_start_y))
-
-        # Add text elements
+        img_start_y = 0
+        card.paste(char_img, (img_start_x, img_start_y))  # Add text elements
         draw = ImageDraw.Draw(card)
 
         # Add scroll image under the name
@@ -68,6 +81,10 @@ class CardGenerator:
         for stat, value in stats.items():
             draw.text((50, y_pos), f"{stat}: {value}", fill=(0, 0, 0), font=font_medium)
             y_pos += 40
+
+        # Apply rounded corner mask to the entire final card
+        final_mask = self.create_rounded_mask(self.output_size, corner_radius=30)
+        card.putalpha(final_mask)
 
         return card
 
