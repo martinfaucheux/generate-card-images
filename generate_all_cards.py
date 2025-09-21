@@ -5,17 +5,17 @@ from notion import fetch_notion_card_database
 from utils import slugify_name
 
 SUIT_COLOR_MAP = {
-    # primary (slightly darker), secondary
-    "Chat": ("#ca926e", "#deb48c"),  # Warm beige/tan
-    "Lieu": ("#8db4a3", "#a8c7b8"),  # Sage green
-    "Rituel": ("#b08bb5", "#c4a5c9"),  # Soft lavender
-    "Esprit": ("#7fb3d6", "#9bc7e0"),  # Sky blue
-    "Festival": ("#f2a69e", "#f7bfb8"),  # Coral pink
-    "Démon": ("#d4818a", "#e0a1a9"),  # Dusty rose
-    "Relique": ("#c4a373", "#d4b98a"),  # Antique gold
-    "Nourriture": ("#9bc08f", "#b0d0a4"),  # Mint green
-    "Potion": ("#a492c2", "#b8a8d1"),  # Soft purple
-    "Idole": ("#e0b882", "#edc99a"),  # Peach cream
+    # primary (pastel), secondary (lighter)
+    "Chat": ("#E6A8A8", "#F5D4D4"),  # Red: pastel red, lighter red
+    "Lieu": ("#8B8B8B", "#C4C4C4"),  # Black: pastel grey, lighter grey
+    "Rituel": ("#8BA8E6", "#C4D4F5"),  # Dark blue: pastel blue, lighter blue
+    "Esprit": ("#A8E6A8", "#D4F5D4"),  # Green: pastel green, lighter green
+    "Festival": ("#E6A8E6", "#F5D4F5"),  # Pink: pastel pink, lighter pink
+    "Démon": ("#C8A8E6", "#E4D4F5"),  # Purple: pastel purple, lighter purple
+    "Relique": ("#B8B8B8", "#DCDCDC"),  # Grey: pastel grey, lighter grey
+    "Idole": ("#E6E6A8", "#F5F5D4"),  # Yellow: pastel yellow, lighter yellow
+    "Nourriture": ("#D4B08A", "#E8CDB0"),  # Brown: pastel brown, lighter brown
+    "Potion": ("#A8D4E6", "#D4E8F5"),  # Light blue
 }
 
 
@@ -45,7 +45,7 @@ def get_image_path(card_title: str) -> str:
 
 
 if __name__ == "__main__":
-    for notion_row in fetch_notion_card_database():
+    for idx, notion_row in enumerate(fetch_notion_card_database()):
         card_title = notion_row["name"]
         description = notion_row["description"].replace("  ", " ").strip()
         points = notion_row["points"]
@@ -67,4 +67,4 @@ if __name__ == "__main__":
         )
         output_path = f"outputs/cards/{slug}.png"
         generator.save_card(card, output_path)
-        print(f"Saved card to {output_path}")
+        print(f"{idx}\tSaved card to {output_path}")
