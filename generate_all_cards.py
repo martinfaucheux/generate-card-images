@@ -71,7 +71,9 @@ def get_image_path(card_title: str) -> str:
 
 
 if __name__ == "__main__":
-    for idx, notion_row in enumerate(fetch_notion_card_database()):
+    notion_rows = fetch_notion_card_database()
+    extra_bold_words = {row["name"] for row in notion_rows}
+    for idx, notion_row in enumerate(notion_rows):
         card_title = notion_row["name"]
         description = notion_row["description"].replace("  ", " ").strip()
         points = notion_row["points"]
@@ -82,7 +84,9 @@ if __name__ == "__main__":
         slug = slugify_name(card_title)
 
         generator = CardGenerator(
-            bg_color_primary=primary_color, bg_color_secondary=secondary_color
+            bg_color_primary=primary_color,
+            bg_color_secondary=secondary_color,
+            extra_bold_words=extra_bold_words,
         )
         card = generator.create_card(
             img_path,

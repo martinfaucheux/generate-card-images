@@ -4,7 +4,31 @@ from PIL import Image, ImageDraw, ImageFont
 
 TITLE_FONT = "fonts/DynaPuff-VariableFont_wdth,wght.ttf"
 TEXT_FONT = "fonts/Sniglet-Regular.ttf"
+TEXT_FONT_BOLD = "fonts/Sniglet-ExtraBold.ttf"
 NUMBER_FONT = "fonts/EagleLake-Regular.ttf"
+
+# Pre-defined words that should be displayed in bold
+BOLD_WORDS = {
+    # Card types/suits
+    "Chat",
+    "Lieu",
+    "Rituel",
+    "Esprit",
+    "Festival",
+    "Démon",
+    "Relique",
+    "Idole",
+    "Nourriture",
+    "Potion",
+    # Game mechanics
+    "MASQUE",
+    "EFFACE",
+    "MASQUÉ",
+    "EFFACE",
+    "BONUS",
+    "MALUS",
+    "SUITE",
+}
 
 
 def color_hex_to_tuple(hex_color: str) -> tuple[int, int, int]:
@@ -94,7 +118,9 @@ class CardGenerator:
         full_card_size: tuple[int, int] = (750, 1050),
         bg_color_primary=(255, 255, 255),
         bg_color_secondary=(240, 240, 240),
+        extra_bold_words=None,
     ):
+        self.bold_words = (extra_bold_words or set()) | BOLD_WORDS
         # if color input is a hex string, convert to RGB tuple
         if isinstance(bg_color_primary, str) and bg_color_primary.startswith("#"):
             bg_color_primary = color_hex_to_tuple(bg_color_primary)
@@ -220,20 +246,81 @@ class CardGenerator:
 
         return pattern
 
+    def _should_be_bold(self, word):
+        """Check if a word should be displayed in bold."""
+        # Remove punctuation for checking but preserve original word for display
+        clean_word = word.strip(".,!?;:")
+        return clean_word in (BOLD_WORDS | self.bold_words)
+
+    def _draw_mixed_text_line(
+        self, draw, words, x, y, max_width, regular_font, bold_font, justify=True
+    ):
+        """Draw a line with mixed regular and bold text, optionally justified."""
+        if not words:
+            return
+
+        # Calculate total width needed with appropriate fonts
+        total_width = 0
+        word_info = []
+
+        for i, word in enumerate(words):
+            font = bold_font if self._should_be_bold(word) else regular_font
+            word_bbox = draw.textbbox((0, 0), word, font=font)
+            word_width = word_bbox[2] - word_bbox[0]
+            word_info.append((word, font, word_width))
+            total_width += word_width
+
+            # Add space width except for last word
+            if i < len(words) - 1:
+                space_bbox = draw.textbbox((0, 0), " ", font=regular_font)
+                space_width = space_bbox[2] - space_bbox[0]
+                total_width += space_width
+
+        # Calculate justification spacing
+        if justify and len(words) > 1:
+            extra_space = max_width - total_width
+            space_per_gap = max(0, extra_space // (len(words) - 1))
+        else:
+            space_per_gap = 0
+
+        # Draw each word with appropriate font
+        current_x = x
+        for i, (word, font, word_width) in enumerate(word_info):
+            draw.text((current_x, y), word, fill=(0, 0, 0), font=font)
+            current_x += word_width
+
+            # Add space after word (except last word)
+            if i < len(words) - 1:
+                space_bbox = draw.textbbox((0, 0), " ", font=regular_font)
+                space_width = space_bbox[2] - space_bbox[0]
+                current_x += space_width + space_per_gap
+
     def _draw_justified_text(self, draw, text, x, y, max_width, font):
-        """Draw justified text with word wrapping within max_width."""
+        """Draw justified text with word wrapping and bold formatting for pre-defined words."""
+        bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
         words = text.split()
         lines = []
         current_line = []
 
-        # Build lines that fit within max_width
+        # Build lines that fit within max_width, considering mixed fonts
         for word in words:
             test_line = current_line + [word]
-            test_text = " ".join(test_line)
-            bbox = draw.textbbox((0, 0), test_text, font=font)
-            text_width = bbox[2] - bbox[0]
 
-            if text_width <= max_width:
+            # Calculate width with mixed fonts
+            test_width = 0
+            for i, test_word in enumerate(test_line):
+                word_font = bold_font if self._should_be_bold(test_word) else font
+                word_bbox = draw.textbbox((0, 0), test_word, font=word_font)
+                word_width = word_bbox[2] - word_bbox[0]
+                test_width += word_width
+
+                # Add space width except for last word
+                if i < len(test_line) - 1:
+                    space_bbox = draw.textbbox((0, 0), " ", font=font)
+                    space_width = space_bbox[2] - space_bbox[0]
+                    test_width += space_width
+
+            if test_width <= max_width:
                 current_line.append(word)
             else:
                 if current_line:
@@ -243,36 +330,17 @@ class CardGenerator:
         if current_line:
             lines.append(current_line)
 
-        # Draw each line with justification (except the last line)
+        # Draw each line with mixed font justification
         line_height = font.size + 5  # Add some line spacing
         current_y = y
 
         for i, line_words in enumerate(lines):
             is_last_line = i == len(lines) - 1
-            line_text = " ".join(line_words)
+            justify = not is_last_line and len(line_words) > 1
 
-            if is_last_line or len(line_words) == 1:
-                # Last line or single word: left-aligned
-                draw.text((x, current_y), line_text, fill=(0, 0, 0), font=font)
-            else:
-                # Justify the line by distributing extra space between words
-                bbox = draw.textbbox((0, 0), line_text, font=font)
-                line_width = bbox[2] - bbox[0]
-                extra_space = max_width - line_width
-                space_per_gap = (
-                    extra_space // (len(line_words) - 1) if len(line_words) > 1 else 0
-                )
-
-                current_x = x
-                for j, word in enumerate(line_words):
-                    draw.text((current_x, current_y), word, fill=(0, 0, 0), font=font)
-                    if j < len(line_words) - 1:  # Not the last word
-                        word_bbox = draw.textbbox((0, 0), word, font=font)
-                        word_width = word_bbox[2] - word_bbox[0]
-                        space_bbox = draw.textbbox((0, 0), " ", font=font)
-                        space_width = space_bbox[2] - space_bbox[0]
-                        current_x += word_width + space_width + space_per_gap
-
+            self._draw_mixed_text_line(
+                draw, line_words, x, current_y, max_width, font, bold_font, justify
+            )
             current_y += line_height
 
     def create_card(
@@ -465,7 +533,8 @@ if __name__ == "__main__":
     )
     # description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
     description = (
-        "Some very long description that will need to be wrapped and justified. " * 3
+        "Some very long description MASQUE that will need to be wrapped and justified. "
+        * 3
     )
     card = generator.create_card(
         img_path,
