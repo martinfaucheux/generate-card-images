@@ -23,6 +23,7 @@ BOLD_WORDS = {
     # Game mechanics
     "MASQUE",
     "MASQUÉ",
+    "MASQUÉE",
     "EFFACE",
     "MASQUÉ",
     "EFFACE",
@@ -253,6 +254,46 @@ class CardGenerator:
         clean_word = word.strip(".,!?;:")
         return clean_word in (BOLD_WORDS | self.bold_words)
 
+    def _preprocess_text_for_multiword_bold(self, text):
+        """Replace multi-word card names with specially marked versions to preserve them during word splitting."""
+        # Sort card names by length (longest first) to avoid partial replacements
+        multi_word_names = [name for name in self.bold_words if " " in name]
+        multi_word_names.sort(key=len, reverse=True)
+
+        # Create a mapping of original names to marked versions
+        marked_text = text
+        name_mapping = {}
+
+        for name in multi_word_names:
+            if name in marked_text:
+                # Create a marked version without spaces that we can split safely
+                marked_name = f"MULTIWORD_{name.replace(' ', '_')}_MULTIWORD"
+                name_mapping[marked_name] = name
+                marked_text = marked_text.replace(name, marked_name)
+
+        return marked_text, name_mapping
+
+    def _postprocess_words_for_multiword_bold(self, words, name_mapping):
+        """Convert marked multi-word names back to their original form."""
+        processed_words = []
+        for word in words:
+            # Check if this word is a marked multi-word name
+            if word.startswith("MULTIWORD_") and word.endswith("_MULTIWORD"):
+                if word in name_mapping:
+                    # Replace with original name
+                    processed_words.append(name_mapping[word])
+                else:
+                    # Fallback - just clean up the markers
+                    clean_word = (
+                        word.replace("MULTIWORD_", "")
+                        .replace("_MULTIWORD", "")
+                        .replace("_", " ")
+                    )
+                    processed_words.append(clean_word)
+            else:
+                processed_words.append(word)
+        return processed_words
+
     def _draw_mixed_text_line(
         self, draw, words, x, y, max_width, regular_font, bold_font, center=True
     ):
@@ -300,8 +341,11 @@ class CardGenerator:
         """Draw centered text with word wrapping, newline support, and bold formatting for pre-defined words."""
         bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
 
+        # Preprocess text to handle multi-word card names
+        processed_text, name_mapping = self._preprocess_text_for_multiword_bold(text)
+
         # First split on newlines to respect explicit line breaks
-        paragraphs = text.split("\n")
+        paragraphs = processed_text.split("\n")
         lines = []
 
         # Process each paragraph separately
@@ -311,6 +355,8 @@ class CardGenerator:
                 continue
 
             words = paragraph.split()
+            # Convert marked multi-word names back to their original form
+            words = self._postprocess_words_for_multiword_bold(words, name_mapping)
             current_line = []
 
             # Build lines that fit within max_width, considering mixed fonts

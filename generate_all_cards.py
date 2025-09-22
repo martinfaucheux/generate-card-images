@@ -7,15 +7,15 @@ from utils import slugify_name
 SUIT_COLOR_MAP = {
     # primary (vibrant), secondary (lighter)
     "Chat": ("#D32F2F", "#FFCDD2"),  # Red: vibrant red, light red
-    "Lieu": ("#424242", "#9E9E9E"),  # Black: dark grey, medium grey
+    "Lieu": ("#7E7E7E", "#9E9E9E"),  # Black: dark grey, medium grey
     "Rituel": ("#1976D2", "#BBDEFB"),  # Dark blue: vibrant blue, light blue
     "Esprit": ("#388E3C", "#C8E6C9"),  # Green: vibrant green, light green
-    "Festival": ("#E91E63", "#F8BBD9"),  # Pink: vibrant pink, light pink
+    "Festival": ("#F465B1", "#F8BBD9"),  # Pink: vibrant pink, light pink
     "Démon": ("#7B1FA2", "#E1BEE7"),  # Purple: vibrant purple, light purple
-    "Relique": ("#757575", "#E0E0E0"),  # Grey: medium grey, light grey
-    "Idole": ("#F57C00", "#FFE0B2"),  # Yellow: vibrant orange-yellow, light yellow
+    "Relique": ("#AE9B0C", "#BEB988"),  # Yellow
+    "Idole": ("#F57C00", "#FFE0B2"),  # Orange: vibrant orange-yellow, light yellow
     "Nourriture": ("#8D6E63", "#D7CCC8"),  # Brown: vibrant brown, light brown
-    "Potion": ("#0097A7", "#B2EBF2"),  # Light blue: vibrant cyan, light cyan
+    "Potion": ("#00B5C9", "#B2EBF2"),  # Light blue: vibrant cyan, light cyan
 }
 
 TEXTURE_MAP = {
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     notion_rows = fetch_notion_card_database()
     extra_bold_words = {row["name"] for row in notion_rows}
     for idx, notion_row in enumerate(notion_rows):
-        card_title = notion_row["name"]
+        card_title = notion_row["name"].strip()
         description = notion_row["description"].replace("  ", " ").strip()
         points = notion_row["points"]
         suit_name = notion_row["suit"]

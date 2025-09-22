@@ -1,6 +1,6 @@
 [
     {
-        "description": "+15 pour chaque Pizza,Spritz et Eau des montagnes   ",
+        "description": "+15 pour chaque Pizza, Spritz et Eau des montagnes",
         "name": "Venise",
         "points": 5,
         "prompt": "a view of Venezia streets but populated by cats",
@@ -31,7 +31,7 @@
     },
     {
         "description": "MASQUÉ sauf avec au moins une carte Potion  et au moins une "
-        "carte Nourriture  ",
+        "carte Nourriture ",
         "name": "Apero",
         "points": 20,
         "prompt": "des chats en train de fêter l’apéro",
@@ -39,7 +39,7 @@
     },
     {
         "description": "+17 avec n’importe quelle carte parmi Soleil  ou Temple de "
-        "l'aube  ",
+        "l'aube ",
         "name": "Salutation au soleil",
         "points": 13,
         "prompt": "une centaine de chat en train de faire une salutation au soleil "
@@ -98,7 +98,7 @@
         "suit": "Relique",
     },
     {
-        "description": "+12 par Nourriture  \n\nMASQUE les autres Chat ",
+        "description": "+12 par Nourriture \n\nMASQUE les autres Chat ",
         "name": "Glouton",
         "points": 7,
         "prompt": "A fat cat eating a burger in a tavern",
@@ -113,7 +113,7 @@
         "suit": "Lieu",
     },
     {
-        "description": "+20 avec Robert le bâtisseur  \n"
+        "description": "+20 avec Robert le bâtisseur \n"
         "\n"
         "Peut changer la suite d’une carte",
         "name": "Rouleau de peinture",
@@ -122,7 +122,7 @@
         "suit": "Relique",
     },
     {
-        "description": "+30 si avec un seul Chat ",
+        "description": "+26 si avec un seul Chat ",
         "name": "Bâton du plaisir",
         "points": 7,
         "prompt": "A wooden round stick",
@@ -189,7 +189,7 @@
     {
         "description": "MASQUÉ par n’importe quel Démon .\n"
         "-10 pour chaque Pizza , Champignon des cavernes , Jus de "
-        "trottoir  ",
+        "trottoir ",
         "name": "Yogi",
         "points": 32,
         "prompt": "a cat doing a yoga warrior pose on a beach at sunset. The cat has "
@@ -201,10 +201,12 @@
         "name": "Burger",
         "points": 2,
         "prompt": "A cat devouring a burger",
-        "suit": "Nourriture ",
+        "suit": "Nourriture",
     },
     {
-        "description": "Annule tous les BONUS\n\n+23 avec Bâton du plaisir ",
+        "description": "Annule tous les BONUS sauf Bâton du plaisir \n"
+        "\n"
+        "+23 avec Bâton du plaisir ",
         "name": "Le pirate",
         "points": 31,
         "prompt": "a cat dressed as a pirate with a sneer",
@@ -212,7 +214,7 @@
     },
     {
         "description": "Some la force de base de toutes les Potion s",
-        "name": "Jus de trottoir ",
+        "name": "Jus de trottoir",
         "points": 3,
         "prompt": "a big pod of disgusting water in bangkok streets. On the side we "
         "can see some cats walking and some tuk tuks",
@@ -231,7 +233,7 @@
     },
     {
         "description": "+ 9 pour chaque Esprit  et Rituel \n\nMASQUE tous les Démon ",
-        "name": "Temple de l'aube ",
+        "name": "Temple de l'aube",
         "points": 14,
         "prompt": "Wat arun",
         "suit": "Lieu",
@@ -259,21 +261,21 @@
     },
     {
         "description": "+20 avec Yogi ",
-        "name": "Forêt de Roquette ",
+        "name": "Forêt de Roquette",
         "points": 8,
         "prompt": "A forest but it looks like the leaves are made of rocket salad.",
-        "suit": "Nourriture ",
+        "suit": "Nourriture",
     },
     {
         "description": "+14 avec Cité Andalouse ",
         "name": "Olive",
         "points": 12,
         "prompt": "a bowl of olives",
-        "suit": "Nourriture ",
+        "suit": "Nourriture",
     },
     {
-        "description": "Some la force de tous les Lieu ",
-        "name": "Robert le bâtisseur ",
+        "description": "Somme la force de tous les Lieu ",
+        "name": "Robert le bâtisseur",
         "points": 4,
         "prompt": "a male cat like 60 years old doing some house renovation. It has "
         "half long white hair with a pony tile and a shirt with white and "
@@ -295,11 +297,11 @@
         "suit": "Potion",
     },
     {
-        "description": "+18 avec Eau des montagnes  ",
+        "description": "+18 avec Eau des montagnes",
         "name": "Champignon des cavernes",
         "points": 11,
         "prompt": "A humid cavern with mushrooms",
-        "suit": "Nourriture ",
+        "suit": "Nourriture",
     },
     {
         "description": "MASQUE les Esprit \n"
@@ -313,7 +315,7 @@
         "suit": "Idole",
     },
     {
-        "description": "+ 18 avec n’importe quelle carte parmi Warren libre-d'en-bas "
+        "description": "+ 14 avec n’importe quelle carte parmi Warren libre-d'en-bas "
         ", Vagabond , Jaco le guru ",
         "name": "Île paradisiaque",
         "points": 12,
@@ -330,15 +332,15 @@
     },
     {
         "description": "MASQUE Le pirate et divise la force de Tunes par 2",
-        "name": "Chômage ",
+        "name": "Chômage",
         "points": 13,
         "prompt": "un chat en peignoir, entouré de paquets de chips, télécommande "
         "dans une main",
         "suit": "Rituel",
     },
     {
-        "description": "Quand vous la défaussez, vous pouvez forcer un joueur à vous "
-        "montrer 3 cartes",
+        "description": "Quand vous la défaussez, vous pouvez forcer un joueur à "
+        "choisir 3 cartes et vous les montrer",
         "name": "Jaco le guru",
         "points": 18,
         "prompt": "a male cat with long white hair, no beard dressed all in white "
@@ -347,7 +349,7 @@
     },
     {
         "description": "Empêche une carte d’être MASQUÉE",
-        "name": "Ronald le Chocolatier ",
+        "name": "Ronald le Chocolatier",
         "points": 11,
         "prompt": "a male Costa Rican cat with glasses in a jungle harvesting some "
         "cocoa seeds ",
@@ -356,17 +358,17 @@
     {
         "description": "à la fin de la partie, pioche 3 cartes, gardez en une et "
         "défaussez les autres",
-        "name": "Renard a talons ",
+        "name": "Renard a talons",
         "points": 1,
         "prompt": "a fox on high heels in a forest",
         "suit": "Esprit",
     },
     {
-        "description": "+7 pour chaque autre Nourriture  ",
+        "description": "+7 pour chaque autre Nourriture ",
         "name": "Pizza",
         "points": 5,
         "prompt": "A cat devouring a pizza",
-        "suit": "Nourriture ",
+        "suit": "Nourriture",
     },
     {
         "description": "Quand cette carte arrive dans votre main, vous pouvez la "
@@ -381,14 +383,14 @@
         "suit": "Chat",
     },
     {
-        "description": "+20 avec Vagabond, Tanguy le Ménestrel ou Jus de trottoir  ",
+        "description": "+55 avec Vagabond, Tanguy le Ménestrel ou Jus de trottoir ",
         "name": "Théâtre de rue",
-        "points": 13,
+        "points": 2,
         "prompt": "Some village street theater with cats as people",
         "suit": "Festival",
     },
     {
-        "description": "+15 avec Eau des montagnes  ",
+        "description": "+15 avec Eau des montagnes ",
         "name": "Fête de l’eau",
         "points": 12,
         "prompt": "Thailand water festival but with cats",
@@ -397,7 +399,7 @@
     {
         "description": "MASQUÉ sauf avec Vagabond \n"
         "MASQUÉ sauf avec n’importe quelle Potion  excepté Eau des "
-        "montagnes  et Tisane ",
+        "montagnes et Tisane ",
         "name": "Fête de la pleine lune",
         "points": 28,
         "prompt": "The khopangan fullmoon party on the beach with cats",
@@ -405,7 +407,7 @@
     },
     {
         "description": "",
-        "name": "Eau des montagnes ",
+        "name": "Eau des montagnes",
         "points": 10,
         "prompt": "Annecy lake",
         "suit": "Potion",
@@ -419,7 +421,7 @@
     },
     {
         "description": "Ajoute la force de base d’une carte de la défausse",
-        "name": "Pamela la guerrière ",
+        "name": "Pamela la guerrière",
         "points": 9,
         "prompt": "a female cat standing up doing some workout on a Ibiza like "
         "shore. It has long blond hair",
@@ -427,7 +429,7 @@
     },
     {
         "description": "+40 par carte MASQUÉE",
-        "name": "Le boucher de baie du port",
+        "name": "Le boucher de la baie du port",
         "points": 3,
         "prompt": "Dexter from the dexter serie, but as a cat, hiding a bloody knife "
         "on its back",
