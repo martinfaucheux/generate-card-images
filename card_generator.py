@@ -22,6 +22,7 @@ BOLD_WORDS = {
     "Potion",
     # Game mechanics
     "MASQUE",
+    "MASQUÉ",
     "EFFACE",
     "MASQUÉ",
     "EFFACE",
@@ -253,9 +254,9 @@ class CardGenerator:
         return clean_word in (BOLD_WORDS | self.bold_words)
 
     def _draw_mixed_text_line(
-        self, draw, words, x, y, max_width, regular_font, bold_font, justify=True
+        self, draw, words, x, y, max_width, regular_font, bold_font, center=True
     ):
-        """Draw a line with mixed regular and bold text, optionally justified."""
+        """Draw a line with mixed regular and bold text, optionally centered."""
         if not words:
             return
 
@@ -276,15 +277,15 @@ class CardGenerator:
                 space_width = space_bbox[2] - space_bbox[0]
                 total_width += space_width
 
-        # Calculate justification spacing
-        if justify and len(words) > 1:
-            extra_space = max_width - total_width
-            space_per_gap = max(0, extra_space // (len(words) - 1))
+        # Calculate centering offset
+        if center:
+            center_offset = (max_width - total_width) // 2
+            start_x = x + max(0, center_offset)
         else:
-            space_per_gap = 0
+            start_x = x
 
         # Draw each word with appropriate font
-        current_x = x
+        current_x = start_x
         for i, (word, font, word_width) in enumerate(word_info):
             draw.text((current_x, y), word, fill=(0, 0, 0), font=font)
             current_x += word_width
@@ -293,53 +294,60 @@ class CardGenerator:
             if i < len(words) - 1:
                 space_bbox = draw.textbbox((0, 0), " ", font=regular_font)
                 space_width = space_bbox[2] - space_bbox[0]
-                current_x += space_width + space_per_gap
+                current_x += space_width
 
-    def _draw_justified_text(self, draw, text, x, y, max_width, font):
-        """Draw justified text with word wrapping and bold formatting for pre-defined words."""
+    def _draw_centered_text(self, draw, text, x, y, max_width, font):
+        """Draw centered text with word wrapping, newline support, and bold formatting for pre-defined words."""
         bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
-        words = text.split()
+
+        # First split on newlines to respect explicit line breaks
+        paragraphs = text.split("\n")
         lines = []
-        current_line = []
 
-        # Build lines that fit within max_width, considering mixed fonts
-        for word in words:
-            test_line = current_line + [word]
+        # Process each paragraph separately
+        for paragraph in paragraphs:
+            if not paragraph.strip():  # Empty line
+                lines.append([])  # Add empty line
+                continue
 
-            # Calculate width with mixed fonts
-            test_width = 0
-            for i, test_word in enumerate(test_line):
-                word_font = bold_font if self._should_be_bold(test_word) else font
-                word_bbox = draw.textbbox((0, 0), test_word, font=word_font)
-                word_width = word_bbox[2] - word_bbox[0]
-                test_width += word_width
+            words = paragraph.split()
+            current_line = []
 
-                # Add space width except for last word
-                if i < len(test_line) - 1:
-                    space_bbox = draw.textbbox((0, 0), " ", font=font)
-                    space_width = space_bbox[2] - space_bbox[0]
-                    test_width += space_width
+            # Build lines that fit within max_width, considering mixed fonts
+            for word in words:
+                test_line = current_line + [word]
 
-            if test_width <= max_width:
-                current_line.append(word)
-            else:
-                if current_line:
-                    lines.append(current_line)
-                current_line = [word]
+                # Calculate width with mixed fonts
+                test_width = 0
+                for i, test_word in enumerate(test_line):
+                    word_font = bold_font if self._should_be_bold(test_word) else font
+                    word_bbox = draw.textbbox((0, 0), test_word, font=word_font)
+                    word_width = word_bbox[2] - word_bbox[0]
+                    test_width += word_width
 
-        if current_line:
-            lines.append(current_line)
+                    # Add space width except for last word
+                    if i < len(test_line) - 1:
+                        space_bbox = draw.textbbox((0, 0), " ", font=font)
+                        space_width = space_bbox[2] - space_bbox[0]
+                        test_width += space_width
 
-        # Draw each line with mixed font justification
+                if test_width <= max_width:
+                    current_line.append(word)
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = [word]
+
+            if current_line:
+                lines.append(current_line)
+
+        # Draw each line centered
         line_height = font.size + 5  # Add some line spacing
         current_y = y
 
-        for i, line_words in enumerate(lines):
-            is_last_line = i == len(lines) - 1
-            justify = not is_last_line and len(line_words) > 1
-
+        for line_words in lines:
             self._draw_mixed_text_line(
-                draw, line_words, x, current_y, max_width, font, bold_font, justify
+                draw, line_words, x, current_y, max_width, font, bold_font, center=True
             )
             current_y += line_height
 
@@ -502,14 +510,14 @@ class CardGenerator:
             font=font_number,
         )
 
-        # Add description with justified text and max width
+        # Add description with centered text and max width
         # Compute font size: lerp between 40 (<=100 chars) and 30 (>=200 chars)
         descr_font_size = determine_font_size(description, 100, 200, 30, 40)
         font_medium = ImageFont.truetype(TEXT_FONT, descr_font_size)
         y_pos = 800
         max_width = 650
         text_x = (self.output_size[0] - max_width) // 2  # Center the text block
-        self._draw_justified_text(
+        self._draw_centered_text(
             draw, description, text_x, y_pos, max_width, font_medium
         )
 
@@ -533,7 +541,7 @@ if __name__ == "__main__":
     )
     # description = 'Si cette carte est dans votre main depuis plus d\'un tour, vous pouvez remplacer votre tour par: "force un joueur à échanger une carte avec celle-ci"'
     description = (
-        "Some very long description MASQUE that will need to be wrapped and justified. "
+        "Some very long description MASQUÉ that will need to be wrapped and justified.\n"
         * 3
     )
     card = generator.create_card(
