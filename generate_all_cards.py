@@ -70,32 +70,38 @@ def get_image_path(card_title: str) -> str:
         return os.path.join(dir_path, files[0])
 
 
+def generate_card_from_notion_row(notion_row, extra_bold_words):
+    card_title = notion_row["name"].strip()
+    description = notion_row["description"].replace("  ", " ").strip()
+    points = notion_row["points"]
+    suit_name = notion_row["suit"]
+    primary_color, secondary_color = SUIT_COLOR_MAP[suit_name]
+
+    img_path = get_image_path(card_title)
+    slug = slugify_name(card_title)
+
+    generator = CardGenerator(
+        bg_color_primary=primary_color,
+        bg_color_secondary=secondary_color,
+        extra_bold_words=extra_bold_words,
+    )
+    return slug, generator.create_card(
+        img_path,
+        f"inputs/logos/{LOGO_MAP[suit_name]}",
+        card_title,
+        description,
+        suit_name,
+        points,
+    )
+
+
 if __name__ == "__main__":
     notion_rows = fetch_notion_card_database()
     extra_bold_words = {row["name"] for row in notion_rows}
     for idx, notion_row in enumerate(notion_rows):
-        card_title = notion_row["name"].strip()
-        description = notion_row["description"].replace("  ", " ").strip()
-        points = notion_row["points"]
-        suit_name = notion_row["suit"]
-        primary_color, secondary_color = SUIT_COLOR_MAP[suit_name]
-
-        img_path = get_image_path(card_title)
-        slug = slugify_name(card_title)
-
-        generator = CardGenerator(
-            bg_color_primary=primary_color,
-            bg_color_secondary=secondary_color,
-            extra_bold_words=extra_bold_words,
-        )
-        card = generator.create_card(
-            img_path,
-            f"inputs/logos/{LOGO_MAP[suit_name]}",
-            card_title,
-            description,
-            suit_name,
-            points,
-        )
+        slug, card = generate_card_from_notion_row(notion_row, extra_bold_words)
         output_path = f"outputs/cards/{slug}.png"
-        generator.save_card(card, output_path)
+
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        card.save(output_path, "PNG")
         print(f"{idx}\tSaved card to {output_path}")
