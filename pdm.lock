@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:04794e3a8547cf97b0dffcef5296a15da008d8ecf008550bfe4b4bd9a130c1d8"
+content_hash = "sha256:23b112ae66e2453993b85fdb896fceb391fba4c52597d26308a9a155d682fcde"
 
 [[metadata.targets]]
 requires_python = "==3.13.*"
@@ -306,6 +306,21 @@ groups = ["default"]
 files = [
     {file = "python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc"},
     {file = "python_dotenv-1.1.1.tar.gz", hash = "sha256:a8a6399716257f45be6a007360200409fce5cda2661e3dec71d23dc15f6189ab"},
+]
+
+[[package]]
+name = "reportlab"
+version = "4.4.4"
+requires_python = "<4,>=3.9"
+summary = "The Reportlab Toolkit"
+groups = ["default"]
+dependencies = [
+    "charset-normalizer",
+    "pillow>=9.0.0",
+]
+files = [
+    {file = "reportlab-4.4.4-py3-none-any.whl", hash = "sha256:299b3b0534e7202bb94ed2ddcd7179b818dcda7de9d8518a57c85a58a1ebaadb"},
+    {file = "reportlab-4.4.4.tar.gz", hash = "sha256:cb2f658b7f4a15be2cc68f7203aa67faef67213edd4f2d4bdd3eb20dab75a80d"},
 ]
 
 [[package]]
