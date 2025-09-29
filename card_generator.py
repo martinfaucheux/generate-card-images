@@ -50,6 +50,7 @@ def determine_font_size(
     If text has length max_char_size or more, return min_font_size.
     """
     text_length = len(text)
+    text_length += 30 * text.count("\n")  # Add weight for newlines
     if text_length < min_char_size:
         return max_font_size
     elif text_length > max_char_size:
@@ -277,19 +278,32 @@ class CardGenerator:
         """Convert marked multi-word names back to their original form."""
         processed_words = []
         for word in words:
-            # Check if this word is a marked multi-word name
-            if word.startswith("MULTIWORD_") and word.endswith("_MULTIWORD"):
-                if word in name_mapping:
-                    # Replace with original name
-                    processed_words.append(name_mapping[word])
+            # Check if this word is a marked multi-word name (handle punctuation)
+            if word.startswith("MULTIWORD_"):
+                # Extract the marked part and any trailing punctuation
+                # Find where "_MULTIWORD" ends
+                multiword_end = word.find("_MULTIWORD")
+                if multiword_end != -1:
+                    # Extract the marked portion and any trailing punctuation
+                    marked_part = word[: multiword_end + len("_MULTIWORD")]
+                    trailing_punct = word[multiword_end + len("_MULTIWORD") :]
+
+                    if marked_part in name_mapping:
+                        # Replace with original name and add back punctuation
+                        processed_words.append(
+                            name_mapping[marked_part] + trailing_punct
+                        )
+                    else:
+                        # Fallback - just clean up the markers
+                        clean_word = (
+                            marked_part.replace("MULTIWORD_", "")
+                            .replace("_MULTIWORD", "")
+                            .replace("_", " ")
+                        )
+                        processed_words.append(clean_word + trailing_punct)
                 else:
-                    # Fallback - just clean up the markers
-                    clean_word = (
-                        word.replace("MULTIWORD_", "")
-                        .replace("_MULTIWORD", "")
-                        .replace("_", " ")
-                    )
-                    processed_words.append(clean_word)
+                    # Malformed marker, just append as-is
+                    processed_words.append(word)
             else:
                 processed_words.append(word)
         return processed_words
