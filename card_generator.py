@@ -351,8 +351,8 @@ class CardGenerator:
                 space_width = space_bbox[2] - space_bbox[0]
                 current_x += space_width
 
-    def _draw_centered_text(self, draw, text, x, y, max_width, font):
-        """Draw centered text with word wrapping, newline support, and bold formatting for pre-defined words."""
+    def _calculate_text_height(self, draw, text, max_width, font):
+        """Calculate the total height needed to render the text with word wrapping."""
         bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
 
         # Preprocess text to handle multi-word card names
@@ -400,6 +400,19 @@ class CardGenerator:
 
             if current_line:
                 lines.append(current_line)
+
+        # Calculate total height
+        line_height = font.size + 5  # Add some line spacing
+        total_height = len(lines) * line_height
+
+        return total_height, lines
+
+    def _draw_centered_text(self, draw, text, x, y, max_width, font):
+        """Draw centered text with word wrapping, newline support, and bold formatting for pre-defined words."""
+        bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
+
+        # Get the processed lines and total height
+        _, lines = self._calculate_text_height(draw, text, max_width, font)
 
         # Draw each line centered
         line_height = font.size + 5  # Add some line spacing
@@ -574,9 +587,24 @@ class CardGenerator:
         # Compute font size: lerp between 40 (<=100 chars) and 30 (>=200 chars)
         descr_font_size = determine_font_size(description, 100, 200, 30, 40)
         font_medium = ImageFont.truetype(TEXT_FONT, descr_font_size)
-        y_pos = 800
         max_width = 650
         text_x = (self.output_size[0] - max_width) // 2  # Center the text block
+
+        # Calculate the description area boundaries
+        description_area_top = img_size  # Start after character image (y=750)
+        description_area_bottom = self.output_size[1]  # End at bottom of card (y=1050)
+        description_area_height = (
+            description_area_bottom - description_area_top
+        )  # 300px
+
+        # Calculate the height of the description text
+        text_height, _ = self._calculate_text_height(
+            draw, description, max_width, font_medium
+        )
+
+        # Center the text vertically within the description area
+        y_pos = description_area_top + (description_area_height - text_height) // 2
+
         self._draw_centered_text(
             draw, description, text_x, y_pos, max_width, font_medium
         )
