@@ -585,7 +585,7 @@ class CardGenerator:
 
         # Add description with centered text and max width
         # Compute font size: lerp between 40 (<=100 chars) and 30 (>=200 chars)
-        descr_font_size = determine_font_size(description, 100, 200, 30, 40)
+        descr_font_size = determine_font_size(description, 100, 240, 25, 40)
         font_medium = ImageFont.truetype(TEXT_FONT, descr_font_size)
         max_width = 650
         text_x = (self.output_size[0] - max_width) // 2  # Center the text block
