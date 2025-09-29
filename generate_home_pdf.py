@@ -40,30 +40,31 @@ def generate_home_pdf(
 
     # Define margins and card layout
     margin = 10 * mm  # 10mm margin on all sides
+    spacing = 5 * mm  # 5mm spacing between cards
     cards_per_row = 3
     cards_per_col = 3
     cards_per_page = cards_per_row * cards_per_col  # 9 cards per page
 
-    # Calculate available space for cards
-    available_width = page_width - 2 * margin
-    available_height = page_height - 2 * margin
+    # Calculate available space for cards (accounting for spacing)
+    available_width = page_width - 2 * margin - (cards_per_row - 1) * spacing
+    available_height = page_height - 2 * margin - (cards_per_col - 1) * spacing
 
-    # Calculate card dimensions to fit 9 cards on a page
+    # Calculate card dimensions to fit 9 cards on a page with spacing
     card_width = available_width / cards_per_row
     card_height = available_height / cards_per_col
 
-    # Cover dimensions (10% larger)
-    cover_scale = 1.1
+    # Cover dimensions (5% larger)
+    cover_scale = 1.05
     cover_width = card_width * cover_scale
     cover_height = card_height * cover_scale
 
     def get_card_positions():
-        """Calculate positions for all 9 cards on a page."""
+        """Calculate positions for all 9 cards on a page with spacing."""
         positions = []
         for row in range(cards_per_col):
             for col in range(cards_per_row):
-                x = margin + col * card_width
-                y = page_height - margin - (row + 1) * card_height
+                x = margin + col * (card_width + spacing)
+                y = page_height - margin - (row + 1) * card_height - row * spacing
                 positions.append((x, y))
         return positions
 
