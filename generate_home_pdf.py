@@ -53,8 +53,8 @@ def generate_home_pdf(
     card_width = available_width / cards_per_row
     card_height = available_height / cards_per_col
 
-    # Cover dimensions (5% larger)
-    cover_scale = 1.05
+    # Cover dimensions
+    cover_scale = 1
     cover_width = card_width * cover_scale
     cover_height = card_height * cover_scale
 
