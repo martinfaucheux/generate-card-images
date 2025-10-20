@@ -6,16 +6,16 @@ from utils import slugify_name
 
 SUIT_COLOR_MAP = {
     # primary (vibrant), secondary (lighter)
-    "Chat": ("#D32F2F", "#FFCDD2"),  # Red: vibrant red, light red
+    "Chat": ("#D32F2F", "#FF8B8B"),  # Red: vibrant red, light red
     "Lieu": ("#7E7E7E", "#9E9E9E"),  # Black: dark grey, medium grey
-    "Rituel": ("#1976D2", "#BBDEFB"),  # Dark blue: vibrant blue, light blue
+    "Rituel": ("#1976D2", "#63B7FD"),  # Dark blue: vibrant blue, light blue
     "Esprit": ("#388E3C", "#C8E6C9"),  # Green: vibrant green, light green
-    "Festival": ("#F465B1", "#F8BBD9"),  # Pink: vibrant pink, light pink
+    "Festival": ("#FD80C3", "#FFDDED"),  # Pink: vibrant pink, light pink
     "Démon": ("#7B1FA2", "#E1BEE7"),  # Purple: vibrant purple, light purple
-    "Relique": ("#AE9B0C", "#BEB988"),  # Yellow
-    "Idole": ("#F57C00", "#FFE0B2"),  # Orange: vibrant orange-yellow, light yellow
+    "Relique": ("#FFE100", "#FFFBD3"),  # Yellow
+    "Idole": ("#F57C00", "#F8C578"),  # Orange: vibrant orange-yellow, light yellow
     "Nourriture": ("#8D6E63", "#D7CCC8"),  # Brown: vibrant brown, light brown
-    "Potion": ("#00B5C9", "#B2EBF2"),  # Light blue: vibrant cyan, light cyan
+    "Potion": ("#00C9B1", "#B2EBF2"),  # Light blue: vibrant cyan, light cyan
 }
 
 TEXTURE_MAP = {

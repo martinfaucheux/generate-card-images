@@ -50,6 +50,7 @@ def determine_font_size(
     If text has length max_char_size or more, return min_font_size.
     """
     text_length = len(text)
+    text_length += 30 * text.count("\n")  # Add weight for newlines
     if text_length < min_char_size:
         return max_font_size
     elif text_length > max_char_size:
@@ -277,19 +278,32 @@ class CardGenerator:
         """Convert marked multi-word names back to their original form."""
         processed_words = []
         for word in words:
-            # Check if this word is a marked multi-word name
-            if word.startswith("MULTIWORD_") and word.endswith("_MULTIWORD"):
-                if word in name_mapping:
-                    # Replace with original name
-                    processed_words.append(name_mapping[word])
+            # Check if this word is a marked multi-word name (handle punctuation)
+            if word.startswith("MULTIWORD_"):
+                # Extract the marked part and any trailing punctuation
+                # Find where "_MULTIWORD" ends
+                multiword_end = word.find("_MULTIWORD")
+                if multiword_end != -1:
+                    # Extract the marked portion and any trailing punctuation
+                    marked_part = word[: multiword_end + len("_MULTIWORD")]
+                    trailing_punct = word[multiword_end + len("_MULTIWORD") :]
+
+                    if marked_part in name_mapping:
+                        # Replace with original name and add back punctuation
+                        processed_words.append(
+                            name_mapping[marked_part] + trailing_punct
+                        )
+                    else:
+                        # Fallback - just clean up the markers
+                        clean_word = (
+                            marked_part.replace("MULTIWORD_", "")
+                            .replace("_MULTIWORD", "")
+                            .replace("_", " ")
+                        )
+                        processed_words.append(clean_word + trailing_punct)
                 else:
-                    # Fallback - just clean up the markers
-                    clean_word = (
-                        word.replace("MULTIWORD_", "")
-                        .replace("_MULTIWORD", "")
-                        .replace("_", " ")
-                    )
-                    processed_words.append(clean_word)
+                    # Malformed marker, just append as-is
+                    processed_words.append(word)
             else:
                 processed_words.append(word)
         return processed_words
@@ -337,8 +351,8 @@ class CardGenerator:
                 space_width = space_bbox[2] - space_bbox[0]
                 current_x += space_width
 
-    def _draw_centered_text(self, draw, text, x, y, max_width, font):
-        """Draw centered text with word wrapping, newline support, and bold formatting for pre-defined words."""
+    def _calculate_text_height(self, draw, text, max_width, font):
+        """Calculate the total height needed to render the text with word wrapping."""
         bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
 
         # Preprocess text to handle multi-word card names
@@ -386,6 +400,19 @@ class CardGenerator:
 
             if current_line:
                 lines.append(current_line)
+
+        # Calculate total height
+        line_height = font.size + 5  # Add some line spacing
+        total_height = len(lines) * line_height
+
+        return total_height, lines
+
+    def _draw_centered_text(self, draw, text, x, y, max_width, font):
+        """Draw centered text with word wrapping, newline support, and bold formatting for pre-defined words."""
+        bold_font = ImageFont.truetype(TEXT_FONT_BOLD, font.size)
+
+        # Get the processed lines and total height
+        _, lines = self._calculate_text_height(draw, text, max_width, font)
 
         # Draw each line centered
         line_height = font.size + 5  # Add some line spacing
@@ -558,11 +585,26 @@ class CardGenerator:
 
         # Add description with centered text and max width
         # Compute font size: lerp between 40 (<=100 chars) and 30 (>=200 chars)
-        descr_font_size = determine_font_size(description, 100, 200, 30, 40)
+        descr_font_size = determine_font_size(description, 100, 240, 25, 40)
         font_medium = ImageFont.truetype(TEXT_FONT, descr_font_size)
-        y_pos = 800
         max_width = 650
         text_x = (self.output_size[0] - max_width) // 2  # Center the text block
+
+        # Calculate the description area boundaries
+        description_area_top = img_size  # Start after character image (y=750)
+        description_area_bottom = self.output_size[1]  # End at bottom of card (y=1050)
+        description_area_height = (
+            description_area_bottom - description_area_top
+        )  # 300px
+
+        # Calculate the height of the description text
+        text_height, _ = self._calculate_text_height(
+            draw, description, max_width, font_medium
+        )
+
+        # Center the text vertically within the description area
+        y_pos = description_area_top + (description_area_height - text_height) // 2
+
         self._draw_centered_text(
             draw, description, text_x, y_pos, max_width, font_medium
         )
